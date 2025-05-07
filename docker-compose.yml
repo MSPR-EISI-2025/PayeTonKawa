@@ -14,8 +14,32 @@ services:
     networks:
       - app-network
 
-  backend:
-    build: ./backend
+  backend_clients:
+    build: ./app/clients
+    volumes:
+      - ./logs:/logs
+    depends_on:
+      - db
+    restart: ${RESTART}
+    links:
+      - db
+    networks:
+      - app-network
+
+  backend_orders:
+    build: ./app/orders
+    volumes:
+      - ./logs:/logs
+    depends_on:
+      - db
+    restart: ${RESTART}
+    links:
+      - db
+    networks:
+      - app-network
+
+  backend_product:
+    build: ./app/product
     volumes:
       - ./logs:/logs
     depends_on:
