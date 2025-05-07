@@ -1,0 +1,3 @@
+[submodule "app/product"]
+	path = app/product
+	url = git@github.com:MSPR-EISI-2025/API_products.git
