@@ -20,19 +20,60 @@ insert how to do it
 - ROY Antoine
 
 ## GitFlow
-## Branches principales :
-- main : contient la version stable en production.
+### Main Branches:
 
-- develop : contient le code en cours de développement, prêt à être intégré.
-## Branches de support :
-- feature/* : pour le développement de nouvelles fonctionnalités. Créées depuis develop, fusionnées dans develop.
+- main: contains the stable version deployed to production.
 
-- release/* : pour préparer une nouvelle version. Créées depuis develop, fusionnées dans main et develop.
+- develop: contains the code currently in development, ready for integration.
 
-- hotfix/* : pour corriger des bugs en production. Créées depuis main, fusionnées dans main et develop.
-## Exemples
-- Nouvelle fonctionnalité : git checkout -b feature/"branche d'origine"/"mon_ticket" develop
+### Supporting Branches:
 
-- Préparation d’une release : git checkout -b release/1.0.0 develop
+- feature/*: used for developing new features. Created from `develop`, merged back into `develop`.
 
-- Correction urgente : git checkout -b hotfix/"branche d'origine"/"mon_ticket" main
+- release/*: used to prepare a new production release. Created from `develop`, merged into both `main` and `develop`.
+
+- hotfix/*: used to fix critical bugs in production. Created from `main`, merged into both `main` and `develop`.
+
+### Examples:
+
+- New feature:
+  `git checkout -b feature/develop/"my_ticket" develop`
+
+- Preparing a release:
+  `git checkout -b release/1.0.0 develop`
+
+- Urgent fix:
+  `git checkout -b hotfix/"source_branch"/"my_ticket" main`
+
+## Connect NestJS to RabbitMQ
+- In each API (clients, orders, product), update main.ts:
+```javascript
+import { NestFactory } from '@nestjs/core';
+import { AppModule } from './app.module';
+import { MicroserviceOptions, Transport } from '@nestjs/microservices';
+
+async function bootstrap() {
+  const app = await NestFactory.create(AppModule);
+
+  app.connectMicroservice<MicroserviceOptions>({
+    transport: Transport.RMQ,
+    options: {
+      urls: ['amqp://user:password@rabbitmq:5672'],
+      queue: 'your_service_queue', // unique for each service
+      queueOptions: {
+        durable: false
+      },
+    },
+  });
+
+  await app.startAllMicroservices();
+  await app.listen(3000);
+}
+bootstrap();
+```
+
+- Each service should use a different queue name (clients_queue, orders_queue, etc.).
+
+- To verify if RabbitMQ is working, there is the management UI : http://localhost:15672
+- Login: user / password
+
