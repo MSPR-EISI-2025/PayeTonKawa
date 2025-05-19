@@ -31,8 +31,8 @@ insert how to do it
 
 - hotfix/* : pour corriger des bugs en production. Créées depuis main, fusionnées dans main et develop.
 ## Exemples
-- Nouvelle fonctionnalité : git checkout -b feature/mon_ticket develop
+- Nouvelle fonctionnalité : git checkout -b feature/"branche d'origine"/"mon_ticket" develop
 
 - Préparation d’une release : git checkout -b release/1.0.0 develop
 
-- Correction urgente : git checkout -b hotfix/mon_ticket main
+- Correction urgente : git checkout -b hotfix/"branche d'origine"/"mon_ticket" main
