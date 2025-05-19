@@ -20,19 +20,24 @@ insert how to do it
 - ROY Antoine
 
 ## GitFlow
-## Branches principales :
-- main : contient la version stable en production.
+### Main Branches:
+- main: contains the stable version deployed to production.
 
-- develop : contient le code en cours de développement, prêt à être intégré.
-## Branches de support :
-- feature/* : pour le développement de nouvelles fonctionnalités. Créées depuis develop, fusionnées dans develop.
+- develop: contains the code currently in development, ready for integration.
 
-- release/* : pour préparer une nouvelle version. Créées depuis develop, fusionnées dans main et develop.
+### Supporting Branches:
+- feature/*: used for developing new features. Created from develop, merged back into develop.
 
-- hotfix/* : pour corriger des bugs en production. Créées depuis main, fusionnées dans main et develop.
-## Exemples
-- Nouvelle fonctionnalité : git checkout -b feature/"branche d'origine"/"mon_ticket" develop
+- release/*: used to prepare a new production release. Created from develop, merged into both main and develop.
 
-- Préparation d’une release : git checkout -b release/1.0.0 develop
+- hotfix/*: used to fix critical bugs in production. Created from main, merged into both main and develop.
 
-- Correction urgente : git checkout -b hotfix/"branche d'origine"/"mon_ticket" main
+### Examples:
+New feature:
+- git checkout -b feature/"source_branch"/"my_ticket" develop
+
+Preparing a release:
+- git checkout -b release/1.0.0 develop
+
+Urgent fix:
+- git checkout -b hotfix/"source_branch"/"my_ticket" main
