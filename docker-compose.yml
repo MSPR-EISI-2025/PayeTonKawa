@@ -38,10 +38,36 @@ services:
     networks:
       - app-network
 
+  db_mock_data:
+    image: mariadb:latest
+    restart: ${RESTART}
+    environment:
+      MARIADB_ROOT_PASSWORD: ${MARIADB_MOCK_ROOT_PASSWORD}
+      MARIADB_DATABASE: ${MARIADB_MOCK_DATABASE}
+      MARIADB_USER: ${MARIADB_MOCK_USER}
+      MARIADB_PASSWORD: ${MARIADB_MOCK_PASSWORD}
+    volumes:
+      - ./mock_mariaDB/data:/var/lib/mysql:rw
+    ports:
+      - "${MARIADB_MOCK_EXPOSE_PORT}:3306"
+    networks:
+      - app-network
+
+  db_mock_import:
+    build: mockDataImport
+    container_name: mockapi-importer
+    profiles:
+      - importer
+    restart: "no"
+    environment:
+      DB_HOST: db_mock_data
+      DB_PORT: 3306
+      DB_NAME: ${MARIADB_MOCK_DATABASE}
+      DB_USER: ${MARIADB_MOCK_USER}
+      DB_PASSWORD: ${MARIADB_MOCK_PASSWORD}
+    networks:
+      - app-network
 
 networks:
   app-network:
     driver: bridge
-
-
-

@@ -1,16 +1,42 @@
-import requests
-import mysql.connector
-import random
+import os
+import sys
+import traceback
+from datetime import datetime
 
-BASE_URL = "https://681b6c5e17018fe5057b864b.mockapi.io/api/v1"
+print("🚀 Starting data import script...")
 
-DB_CONFIG = {
-    "host": "localhost",
-    "port": 6000,
-    "user": "mockapi_user",
-    "password": "mockapiuserpass",
-    "database": "mockapi_db"
-}
+try:
+    import requests
+    import pymysql
+    import random
+
+    BASE_URL = "https://681b6c5e17018fe5057b864b.mockapi.io/api/v1"
+    DB_CONFIG = {
+        "host": os.getenv("DB_HOST", "localhost"),
+        "port": int(os.getenv("DB_PORT", 3306)),
+        "user": os.getenv("DB_USER", "root"),
+        "password": os.getenv("DB_PASSWORD", ""),
+        "database": os.getenv("DB_NAME", "test"),
+        "charset": "utf8mb4",
+    }
+
+    print("🔌 Connecting to database at", DB_CONFIG["host"], ":", DB_CONFIG["port"])
+    conn = pymysql.connect(**DB_CONFIG)
+    cursor = conn.cursor()
+    cursor.execute("SET NAMES utf8mb4 COLLATE utf8mb4_general_ci;")
+    print("✅ Connected to DB!")
+
+except Exception as e:
+    print("❌ Exception occurred during setup:")
+    traceback.print_exc()
+    sys.exit(1)
+
+
+def format_datetime(iso_string):
+    try:
+        return datetime.fromisoformat(iso_string.replace("Z", "")).strftime("%Y-%m-%d %H:%M:%S")
+    except:
+        return None
 
 def fetch_data(endpoint):
     response = requests.get(f"{BASE_URL}/{endpoint}")
@@ -66,12 +92,14 @@ def create_tables(cursor):
     """)
 
 
+
 def insert_customers(cursor, customers):
     for c in customers:
+        created_at = format_datetime(c["createdAt"])
         cursor.execute("""
             REPLACE INTO customers VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
         """, (
-            c["id"], c["createdAt"], c["name"], c["username"],
+            c["id"], created_at, c["name"], c["username"],
             c["firstName"], c["lastName"],
             c.get("address", {}).get("postalCode"),
             c.get("address", {}).get("city"),
@@ -82,10 +110,11 @@ def insert_customers(cursor, customers):
 
 def insert_orders(cursor, orders, customer_ids, product_ids):
     for o in orders:
+        created_at = format_datetime(o["createdAt"])
         customer_id = random.choice(customer_ids)
         cursor.execute("""
             REPLACE INTO orders (id, createdAt, customer_id) VALUES (%s, %s, %s)
-        """, (o["id"], o["createdAt"], customer_id))
+        """, (o["id"], created_at, customer_id))
 
         # Link 1 or 2 random products
         linked_products = random.sample(product_ids, k=random.choice([1, 2]))
@@ -94,8 +123,10 @@ def insert_orders(cursor, orders, customer_ids, product_ids):
                 INSERT INTO order_items (order_id, product_id) VALUES (%s, %s)
             """, (o["id"], product_id))
 
+
 def insert_products(cursor, products):
     for p in products:
+        created_at = format_datetime(p["createdAt"])
         price = p.get("details", {}).get("price")
         try:
             price = float(price)
@@ -104,18 +135,20 @@ def insert_products(cursor, products):
         cursor.execute("""
             REPLACE INTO products VALUES (%s, %s, %s, %s, %s, %s, %s)
         """, (
-            p["id"], p["createdAt"], p["name"],
+            p["id"], created_at, p["name"],
             price,
             p.get("details", {}).get("description"),
             p.get("details", {}).get("color"),
             p.get("stock")
         ))
 
-def main():
-    conn = mysql.connector.connect(**DB_CONFIG)
-    cursor = conn.cursor()
 
+def main():
+    print("🚀 Starting data import script...")
+
+    print("📦 Creating tables...")
     create_tables(cursor)
+    print("✅ Tables created.")
 
     print("Fetching and inserting customers...")
     customers = fetch_data("customers")
@@ -134,5 +167,8 @@ def main():
     conn.commit()
     cursor.close()
     conn.close()
-    print("✅ Done.")
+    print("✅ Data import completed.")
 
+if __name__ == "__main__":
+    print("🧪 TEST: main() is about to run.")
+    main()
