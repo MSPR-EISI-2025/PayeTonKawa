@@ -1,0 +1,47 @@
+version: "3.8"
+services:
+
+  db_auth:
+    image: mariadb:latest
+    environment:
+      MARIADB_ROOT_PASSWORD: ${DB_AUTH_PASS}
+      MARIADB_DATABASE: ${DB_AUTH_DATABASE}
+      MARIADB_USER: ${DB_AUTH_USER}
+      MARIADB_PASSWORD: ${DB_AUTH_USER_PASS}
+    restart: unless-stopped
+    volumes:
+      - ./mariaDB/data:/var/lib/mysql:rw
+    networks:
+      - app-network
+
+  backend_clients:
+    build: ./app/clients
+    volumes:
+      - ./logs:/logs
+    restart: ${RESTART}
+    networks:
+      - app-network
+
+  backend_orders:
+    build: ./app/orders
+    volumes:
+      - ./logs:/logs
+    restart: ${RESTART}
+    networks:
+      - app-network
+
+  backend_product:
+    build: ./app/product
+    volumes:
+      - ./logs:/logs
+    restart: ${RESTART}
+    networks:
+      - app-network
+
+
+networks:
+  app-network:
+    driver: bridge
+
+
+

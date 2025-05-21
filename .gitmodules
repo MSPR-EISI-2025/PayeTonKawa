@@ -1,0 +1,9 @@
+[submodule "app/product"]
+	path = app/product
+	url = git@github.com:MSPR-EISI-2025/API_products.git
+[submodule "app/clients"]
+	path = app/clients
+	url = git@github.com:MSPR-EISI-2025/API_clients.git
+[submodule "app/orders"]
+	path = app/orders
+	url = git@github.com:MSPR-EISI-2025/API_orders.git
