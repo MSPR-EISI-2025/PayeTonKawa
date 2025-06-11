@@ -9,7 +9,7 @@ services:
       MARIADB_PASSWORD: keycloakpass
     restart: unless-stopped
     volumes:
-      - './mariaDB/data:/var/lib/mysql:rw'
+      - './KC_DB/data:/var/lib/mysql:rw'
     networks:
       - app-network
 
@@ -29,8 +29,6 @@ services:
       # KC_HOSTNAME_STRICT: "false"
       # KC_HTTP_ENABLED: "true"
       KC_DB_URL_HOST: mariadb
-    volumes:
-      - './themes:/opt/keycloak/themes'
     ports:
       - "8080:8080"
     restart: unless-stopped
