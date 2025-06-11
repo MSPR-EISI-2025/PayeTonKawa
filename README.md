@@ -14,7 +14,7 @@ insert how to do it
  - DB is accessible at  localhost:3306
 
 ## Collaborators
--CHANELIERE Romain
+- CHANELIERE Romain
 - CASELLA Théo
 - BOUKHEMIRI Rafik
 - ROY Antoine
@@ -25,14 +25,14 @@ insert how to do it
 
 - develop : contient le code en cours de développement, prêt à être intégré.
 ## Branches de support :
-- feature/* : pour le développement de nouvelles fonctionnalités. Créées depuis develop, fusionnées dans develop.
+- `feature/*` : pour le développement de nouvelles fonctionnalités. Créées depuis develop, fusionnées dans develop.
 
-- release/* : pour préparer une nouvelle version. Créées depuis develop, fusionnées dans main et develop.
+- `release/*` : pour préparer une nouvelle version. Créées depuis develop, fusionnées dans main et develop.
 
-- hotfix/* : pour corriger des bugs en production. Créées depuis main, fusionnées dans main et develop.
+- `hotfix/*` : pour corriger des bugs en production. Créées depuis main, fusionnées dans main et develop.
 ## Exemples
-- Nouvelle fonctionnalité : git checkout -b feature/"branche d'origine"/"mon_ticket" develop
+- Nouvelle fonctionnalité : `git checkout -b feature/"branche d'origine"/"mon_ticket" develop`
 
-- Préparation d’une release : git checkout -b release/1.0.0 develop
+- Préparation d’une release : `git checkout -b release/1.0.0 develop`
 
-- Correction urgente : git checkout -b hotfix/"branche d'origine"/"mon_ticket" main
+- Correction urgente : `git checkout -b hotfix/"branche d'origine"/"mon_ticket" main`
