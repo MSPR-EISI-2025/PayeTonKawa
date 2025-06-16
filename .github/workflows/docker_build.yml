@@ -2,7 +2,7 @@ name: Build Docker Images with Compose
 
 on:
   push:
-    branches: [ main ]  # ou la branche de ton choix
+    branches: [ main ]
   pull_request:
 
 jobs:
