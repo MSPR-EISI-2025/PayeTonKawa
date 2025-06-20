@@ -77,3 +77,41 @@ bootstrap();
 - To verify if RabbitMQ is working, there is the management UI : http://localhost:15672
 - Login: user / password
 
+# Services comunication
+```
+
+                 [ CLIENT API ]
+                        |
+                        v
+                    [ Traefik ]
+                        |
+                        +------------------> [ Keycloak ]
+                        |                       (Auth OIDC)
+                        |
+                        |
+            +----------------+------------------+
+            |                |                  |
+            v                v                  v
+
++---------------------+   +--------------------+   +----------------------+
+|     API CLIENT      |   |    API PRODUIT     |   |    API COMMANDE      |
+| - Gestion client    |   | - Catalogue café   |   | - Création commande  |
+| - CRUD profils      |   | - Prix, stock      |   | - Suivi des statuts  |
++---------------------+   +--------------------+   +----------------------+
+            |                |                  |
+            +--------+-------+--------+---------+
+                             |
+                             v
+                       +-----+-----+
+                       | RabbitMQ  |
+                       +-----------+
+                             |
+              +--------------+--------------+
+              |                             |
+       +------+-------+                 +-------+------+
+       | Consommateurs | ← événements → | Autres APIs |
+       |  internes ou  |                | abonnés (ex.|
+       |   externes    |                | facturation)|
+       +--------------+                +-------------+
+
+```
