@@ -166,3 +166,41 @@ docker-compose --profile importer run --rm db_mock_import
 ```
 
 
+# Services comunication
+```
+
+                 [ CLIENT API ]
+                        |
+                        v
+                    [ Traefik ]
+                        |
+                        +------------------> [ Keycloak ]
+                        |                       (Auth OIDC)
+                        |
+                        |
+            +----------------+------------------+
+            |                |                  |
+            v                v                  v
+
++---------------------+   +--------------------+   +----------------------+
+|     API CLIENT      |   |    API PRODUIT     |   |    API COMMANDE      |
+| - Gestion client    |   | - Catalogue café   |   | - Création commande  |
+| - CRUD profils      |   | - Prix, stock      |   | - Suivi des statuts  |
++---------------------+   +--------------------+   +----------------------+
+            |                |                  |
+            +--------+-------+--------+---------+
+                             |
+                             v
+                       +-----+-----+
+                       | RabbitMQ  |
+                       +-----------+
+                             |
+              +--------------+--------------+
+              |                             |
+       +------+-------+                 +-------+------+
+       | Consommateurs | ← événements → | Autres APIs |
+       |  internes ou  |                | abonnés (ex.|
+       |   externes    |                | facturation)|
+       +--------------+                +-------------+
+
+```
