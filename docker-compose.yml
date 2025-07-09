@@ -8,7 +8,7 @@ services:
       MARIADB_DATABASE: ${DB_AUTH_DATABASE}
       MARIADB_USER: ${DB_AUTH_USER}
       MARIADB_PASSWORD: ${DB_AUTH_USER_PASS}
-    restart: unless-stopped
+    restart: ${RESTART}
     volumes:
       - ./mariaDB/data:/var/lib/mysql:rw
     networks:
@@ -18,11 +18,11 @@ services:
     image: rabbitmq:3-management
     container_name: rabbitmq
     ports:
-      - "5672:5672"
-      - "15672:15672"
+      - "${RABBITMQ_MAIN_PORT}:5672"
+      - "${RABBITMQ_UI_PORT}:15672"
     environment:
-      RABBITMQ_DEFAULT_USER: user
-      RABBITMQ_DEFAULT_PASS: password
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASS}
     networks:
       - app-network
 
@@ -31,6 +31,12 @@ services:
     volumes:
       - ./logs:/logs
     restart: ${RESTART}
+    environment:
+      RABBITMQ_USER: ${RABBITMQ_USER}
+      RABBITMQ_PASS: ${RABBITMQ_PASS}
+      RABBITMQ_HOST: ${RABBITMQ_HOST}
+      RABBITMQ_PORT: ${RABBITMQ_MAIN_PORT}
+      RABBITMQ_QUEUE: ${RABBITMQ_QUEUE_CLIENTS}
     depends_on:
       - rabbitmq
     networks:
@@ -41,6 +47,12 @@ services:
     volumes:
       - ./logs:/logs
     restart: ${RESTART}
+    environment:
+      RABBITMQ_USER: ${RABBITMQ_USER}
+      RABBITMQ_PASS: ${RABBITMQ_PASS}
+      RABBITMQ_HOST: ${RABBITMQ_HOST}
+      RABBITMQ_PORT: ${RABBITMQ_MAIN_PORT}
+      RABBITMQ_QUEUE: ${RABBITMQ_QUEUE_ORDERS}
     depends_on:
       - rabbitmq
     networks:
@@ -51,6 +63,12 @@ services:
     volumes:
       - ./logs:/logs
     restart: ${RESTART}
+    environment:
+      RABBITMQ_USER: ${RABBITMQ_USER}
+      RABBITMQ_PASS: ${RABBITMQ_PASS}
+      RABBITMQ_HOST: ${RABBITMQ_HOST}
+      RABBITMQ_PORT: ${RABBITMQ_MAIN_PORT}
+      RABBITMQ_QUEUE: ${RABBITMQ_QUEUE_PRODUCTS}
     depends_on:
       - rabbitmq
     networks:
