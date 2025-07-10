@@ -5,8 +5,42 @@
 - NestJS
 
 ## Deployment
+
+### Prérequis
+- Docker + Docker Compose
+- Un fichier `.env` à la racine
+
+### Étapes de déploiement
+
+1. `cp .env.prod.sample .env`
+2. compléter les variables vides
+3. **Générer le script SQL avec les utilisateurs pour la db :**
+
+```bash
+make init-sql
 ```
-insert how to do it
+
+### Lancer tous les services en arrière-plan :
+
+```bash
+make up
+```
+
+### Importer les données mock :
+
+```bash
+make importer
+```
+### Arrêter les services :
+
+```bash
+make down
+```
+
+### Nettoyer le fichier SQL généré :
+
+```bash
+make clean
 ```
 
 ## Miscellaneous 
@@ -15,7 +49,7 @@ insert how to do it
 - DB_Mock_Data is accessible at  localhost:6000
 
 ## Collaborators
--CHANELIERE Romain
+- CHANELIERE Romain
 - CASELLA Théo
 - BOUKHEMIRI Rafik
 - ROY Antoine
