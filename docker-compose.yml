@@ -37,6 +37,8 @@ services:
       RABBITMQ_HOST: ${RABBITMQ_HOST}
       RABBITMQ_PORT: ${RABBITMQ_MAIN_PORT}
       RABBITMQ_QUEUE: ${RABBITMQ_QUEUE_CLIENTS}
+      DB_USER: ${CLIENTS_DB_USER}
+      DB_PASS: ${CLIENTS_DB_PASS}
     depends_on:
       - rabbitmq
     networks:
@@ -53,6 +55,8 @@ services:
       RABBITMQ_HOST: ${RABBITMQ_HOST}
       RABBITMQ_PORT: ${RABBITMQ_MAIN_PORT}
       RABBITMQ_QUEUE: ${RABBITMQ_QUEUE_ORDERS}
+      DB_USER: ${ORDERS_DB_USER}
+      DB_PASS: ${ORDERS_DB_PASS}
     depends_on:
       - rabbitmq
     networks:
@@ -69,10 +73,44 @@ services:
       RABBITMQ_HOST: ${RABBITMQ_HOST}
       RABBITMQ_PORT: ${RABBITMQ_MAIN_PORT}
       RABBITMQ_QUEUE: ${RABBITMQ_QUEUE_PRODUCTS}
+      DB_USER: ${PRODUCTS_DB_USER}
+      DB_PASS: ${PRODUCTS_DB_PASS}
     depends_on:
       - rabbitmq
     networks:
       - app-network
+
+  db_mock_data:
+    image: mariadb:latest
+    restart: ${RESTART}
+    environment:
+      MARIADB_ROOT_PASSWORD: ${MARIADB_MOCK_ROOT_PASSWORD}
+      MARIADB_DATABASE: ${MARIADB_MOCK_DATABASE}
+      MARIADB_USER: ${MARIADB_MOCK_USER}
+      MARIADB_PASSWORD: ${MARIADB_MOCK_PASSWORD}
+    volumes:
+      - ./mock_mariaDB/data:/var/lib/mysql:rw
+      - ./mock_mariaDB/init:/docker-entrypoint-initdb.d:ro
+    ports:
+      - "${MARIADB_MOCK_EXPOSE_PORT}:3306"
+    networks:
+      - app-network
+
+  db_mock_import:
+    build: mockDataImport
+    container_name: mockapi-importer
+    profiles:
+      - importer
+    restart: "no"
+    environment:
+      DB_HOST: db_mock_data
+      DB_PORT: 3306
+      DB_NAME: ${MARIADB_MOCK_DATABASE}
+      DB_USER: ${MARIADB_MOCK_USER}
+      DB_PASSWORD: ${MARIADB_MOCK_PASSWORD}
+    networks:
+      - app-network
+
 
 networks:
   app-network:
