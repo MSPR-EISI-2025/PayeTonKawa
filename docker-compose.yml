@@ -37,6 +37,7 @@ services:
       RABBITMQ_HOST: ${RABBITMQ_HOST}
       RABBITMQ_PORT: ${RABBITMQ_MAIN_PORT}
       RABBITMQ_QUEUE: ${RABBITMQ_QUEUE_CLIENTS}
+      NODE_ENV: ${NODE_ENV}
     depends_on:
       - rabbitmq
     networks:
@@ -53,6 +54,7 @@ services:
       RABBITMQ_HOST: ${RABBITMQ_HOST}
       RABBITMQ_PORT: ${RABBITMQ_MAIN_PORT}
       RABBITMQ_QUEUE: ${RABBITMQ_QUEUE_ORDERS}
+      NODE_ENV: ${NODE_ENV}
     depends_on:
       - rabbitmq
     networks:
@@ -69,6 +71,7 @@ services:
       RABBITMQ_HOST: ${RABBITMQ_HOST}
       RABBITMQ_PORT: ${RABBITMQ_MAIN_PORT}
       RABBITMQ_QUEUE: ${RABBITMQ_QUEUE_PRODUCTS}
+      NODE_ENV: ${NODE_ENV}
     depends_on:
       - rabbitmq
     networks:
