@@ -37,6 +37,9 @@ services:
       RABBITMQ_HOST: ${RABBITMQ_HOST}
       RABBITMQ_PORT: ${RABBITMQ_MAIN_PORT}
       RABBITMQ_QUEUE: ${RABBITMQ_QUEUE_CLIENTS}
+      NODE_ENV: ${NODE_ENV}
+      DB_USER: ${CLIENTS_DB_USER}
+      DB_PASS: ${CLIENTS_DB_PASS}
     depends_on:
       - rabbitmq
     networks:
@@ -53,6 +56,9 @@ services:
       RABBITMQ_HOST: ${RABBITMQ_HOST}
       RABBITMQ_PORT: ${RABBITMQ_MAIN_PORT}
       RABBITMQ_QUEUE: ${RABBITMQ_QUEUE_ORDERS}
+      NODE_ENV: ${NODE_ENV}
+      DB_USER: ${ORDERS_DB_USER}
+      DB_PASS: ${ORDERS_DB_PASS}
     depends_on:
       - rabbitmq
     networks:
@@ -69,6 +75,9 @@ services:
       RABBITMQ_HOST: ${RABBITMQ_HOST}
       RABBITMQ_PORT: ${RABBITMQ_MAIN_PORT}
       RABBITMQ_QUEUE: ${RABBITMQ_QUEUE_PRODUCTS}
+      NODE_ENV: ${NODE_ENV}
+      DB_USER: ${PRODUCTS_DB_USER}
+      DB_PASS: ${PRODUCTS_DB_PASS}
     depends_on:
       - rabbitmq
     networks:
@@ -84,6 +93,7 @@ services:
       MARIADB_PASSWORD: ${MARIADB_MOCK_PASSWORD}
     volumes:
       - ./mock_mariaDB/data:/var/lib/mysql:rw
+      - ./mock_mariaDB/init:/docker-entrypoint-initdb.d:ro
     ports:
       - "${MARIADB_MOCK_EXPOSE_PORT}:3306"
     networks:
