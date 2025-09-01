@@ -8,7 +8,7 @@ on:
     branches: [develop, main]
 
 env:
-  DOCKERHUB_ORG: payetonkawa   
+  DOCKERHUB_ORG: bowo73/payetonkawa   
 
 permissions:
   contents: read
