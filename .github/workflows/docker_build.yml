@@ -26,6 +26,7 @@ jobs:
         with:
           submodules: recursive
           fetch-depth: 0
+          token: ${{ secrets.GH_SUBMODULES_TOKEN }}
 
       - name: Decide channel tag
         id: ch
