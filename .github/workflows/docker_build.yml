@@ -104,5 +104,4 @@ jobs:
           set: |
             *.cache-from=type=gha
             *.cache-to=type=gha,mode=max
-            # Pour multi-arch, décommente:
-            # *.platform=linux/amd64,linux/arm64
+            *.platform=linux/amd64,linux/arm64
