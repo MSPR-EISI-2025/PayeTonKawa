@@ -83,8 +83,8 @@ jobs:
           for name in buildables:
               out.append(f'target "{name}" {{')
               out.append("  tags = [")
-              out.append(f'    "docker.io/{org}/{name}:{sha}",')
-              out.append(f'    "docker.io/{org}/{name}:{channel}"')
+              out.append(f'    "{org}/{name}:{sha}",')
+              out.append(f'    "{org}/{name}:{channel}"')
               out.append("  ]")
               out.append("}")
               out.append("")
