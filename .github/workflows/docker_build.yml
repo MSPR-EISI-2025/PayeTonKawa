@@ -55,6 +55,7 @@ jobs:
         env:
           CHANNEL_TAG: ${{ steps.ch.outputs.channel }}
           DOCKERHUB_ORG: ${{ env.DOCKERHUB_ORG }}
+          GIT_SHA: ${{ github.sha }}
         run: |
           python3 -m pip install --user pyyaml >/dev/null 2>&1
           python3 - << 'PY'
@@ -66,6 +67,7 @@ jobs:
           if not buildables:
               print("No buildable services found.", file=sys.stderr); sys.exit(1)
 
+          sha = os.environ['GIT_SHA']
           org = os.environ["DOCKERHUB_ORG"]
           channel = os.environ["CHANNEL_TAG"]
 
@@ -80,7 +82,7 @@ jobs:
           for name in buildables:
               out.append(f'target "{name}" {{')
               out.append("  tags = [")
-              out.append(f'    "docker.io/{org}/{name}:${{GITHUB_SHA}}",')
+              out.append(f'    "docker.io/{org}/{name}:{sha}",')
               out.append(f'    "docker.io/{org}/{name}:{channel}"')
               out.append("  ]")
               out.append("}")
