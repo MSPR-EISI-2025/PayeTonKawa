@@ -1,4 +1,4 @@
-name: Build & Push ALL images from docker-compose
+name: Compose build & push (no Bake)
 
 on:
   workflow_dispatch:
@@ -8,24 +8,26 @@ on:
     branches: [develop, main]
 
 env:
-  DOCKERHUB_ORG: bowo73/payetonkawa   
+  DOCKERHUB_REPO: toto/payetonkawa    # repo unique Docker Hub
+  PROJECT_NAME: pk                     # nom de projet compose pour des tags images stables
 
 permissions:
   contents: read
 
 concurrency:
-  group: build-images-${{ github.ref }}
+  group: compose-build-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout (with submodules)
+      # Submodules privés (PAT fine-grained: Contents: Read)
+      - name: Checkout (root + private submodules)
         uses: actions/checkout@v4
         with:
-          submodules: recursive
           fetch-depth: 0
+          submodules: recursive
           token: ${{ secrets.GH_SUBMODULES_TOKEN }}
 
       - name: Decide channel tag
@@ -37,71 +39,77 @@ jobs:
             echo "channel=ci-develop" >> $GITHUB_OUTPUT
           fi
 
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-
-      - name: Set up Buildx
-        uses: docker/setup-buildx-action@v3
-
       - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      # genere un bake.hcl
-      # inclut toute les cibles ayant "build:" dans le compose
-      # assigne des tags docker hub: :<sha> et :ci-develop|ci-main
-      - name: Generate bake.hcl from docker-compose.yml
-        env:
-          CHANNEL_TAG: ${{ steps.ch.outputs.channel }}
-          DOCKERHUB_ORG: ${{ env.DOCKERHUB_ORG }}
-          GIT_SHA: ${{ github.sha }}
+      # Liste uniquement les services qui ont un "build:" dans le compose
+      - name: Detect buildable services
+        id: svc
         run: |
-          python3 -m pip install --user pyyaml >/dev/null 2>&1
-          python3 - << 'PY'
-          import os, sys, yaml
-          compose_path = "docker-compose.yml"
-          data = yaml.safe_load(open(compose_path))
-          services = (data or {}).get("services", {})
-          buildables = [name for name, svc in services.items() if isinstance(svc, dict) and "build" in svc]
-          if not buildables:
-              print("No buildable services found.", file=sys.stderr); sys.exit(1)
-
-          sha = os.environ['GIT_SHA']
-          org = os.environ["DOCKERHUB_ORG"]
-          channel = os.environ["CHANNEL_TAG"]
-
-          out = []
-          # groupe par defaut: toutes les cibles buildables
-          out.append('group "default" {')
-          out.append("  targets = [%s]" % (", ".join(f'"{t}"' for t in buildables)))
-          out.append("}")
-          out.append("")
-
-          # definition des tags par service
-          for name in buildables:
-              out.append(f'target "{name}" {{')
-              out.append("  tags = [")
-              out.append(f'    "{org}/{name}:{sha}",')
-              out.append(f'    "{org}/{name}:{channel}"')
-              out.append("  ]")
-              out.append("}")
-              out.append("")
-          open("bake.hcl", "w").write("\n".join(out))
+          python3 - <<'PY' > buildable.txt
+          import yaml, sys
+          with open('docker-compose.yml') as f:
+              data = yaml.safe_load(f) or {}
+          svcs = []
+          for name, svc in (data.get('services') or {}).items():
+              if isinstance(svc, dict) and 'build' in svc:
+                  svcs.append(name)
+          if not svcs:
+              print("No buildable services found", file=sys.stderr); sys.exit(1)
+          print("\n".join(svcs))
           PY
-          echo "Generated bake.hcl:"
-          sed -n '1,200p' bake.hcl
+          echo "services=$(paste -sd, buildable.txt)" >> $GITHUB_OUTPUT
+          echo "Buildable services:"; cat buildable.txt
 
-      # build et push toutes les cibles du compose (groupe "default") avec tags du bake.hcl
-      - name: Bake & Push (ALL buildable services)
-        uses: docker/bake-action@v5
-        with:
-          files: |
-            docker-compose.yml
-            bake.hcl
-          push: true
-          set: |
-            *.cache-from=type=gha
-            *.cache-to=type=gha,mode=max
-            *.platform=linux/arm64
+      # Build avec docker compose (BuildKit actif par défaut). On force un project name stable.
+      - name: Compose build
+        run: |
+          export DOCKER_BUILDKIT=1
+          docker compose -p "${PROJECT_NAME}" build $(cat buildable.txt)
+
+      # Retag & push : <repo>:<service>-<sha> et <repo>:<service>-<channel>
+      - name: Tag & Push
+        env:
+          SHA: ${{ github.sha }}
+          CHANNEL: ${{ steps.ch.outputs.channel }}
+          REPO: ${{ env.DOCKERHUB_REPO }}
+          PROJECT_NAME: ${{ env.PROJECT_NAME }}
+        run: |
+          set -euo pipefail
+          for svc in $(cat buildable.txt); do
+            # image locale produite par compose si "image:" n'est pas défini
+            LOCAL_REF="${PROJECT_NAME}_${svc}:latest"
+
+            # si le service a une clé image:, on l'utilise comme source
+            IMG_FROM_COMPOSE=$(docker compose -p "${PROJECT_NAME}" config --images 2>/dev/null | awk -v s="$svc" '$0 ~ s":" {print $0}')
+            if [ -n "${IMG_FROM_COMPOSE}" ]; then
+              # prend la première image référencée pour ce service
+              LOCAL_REF=$(echo "${IMG_FROM_COMPOSE}" | head -n1)
+            fi
+
+            # S'assure que l'image existe localement
+            if ! docker image inspect "${LOCAL_REF}" >/dev/null 2>&1; then
+              # fallback: essaye le repo implicite sans tag
+              if docker image inspect "${PROJECT_NAME}_${svc}" >/dev/null 2>&1; then
+                LOCAL_REF="${PROJECT_NAME}_${svc}"
+              else
+                echo "❌ Image introuvable pour ${svc} (réf: ${LOCAL_REF})"; exit 1
+              fi
+            fi
+
+            # Tags distants
+            REM_SHA="${REPO}:${svc}-${SHA}"
+            REM_CHN="${REPO}:${svc}-${CHANNEL}"
+
+            echo "➡️  Pushing ${svc} as:"
+            echo "    - ${REM_SHA}"
+            echo "    - ${REM_CHN}"
+
+            docker tag "${LOCAL_REF}" "${REM_SHA}"
+            docker tag "${LOCAL_REF}" "${REM_CHN}"
+            docker push "${REM_SHA}"
+            docker push "${REM_CHN}"
+          done
