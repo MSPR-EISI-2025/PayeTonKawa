@@ -1,30 +1,107 @@
-name: Build Docker Images with Compose
+name: Build & Push ALL images from docker-compose
 
 on:
- workflow_dispatch:
+  workflow_dispatch:
+  push:
+    branches: [develop, main]
+  pull_request:
+    branches: [develop, main]
+
+env:
+  DOCKERHUB_ORG: payetonkawa   
+
+permissions:
+  contents: read
+
+concurrency:
+  group: build-images-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  build:
+  build-and-push:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout repository
+      - name: Checkout (with submodules)
         uses: actions/checkout@v4
         with:
-          ref: main 
+          submodules: recursive
+          fetch-depth: 0
 
-      - name: Set up Docker Buildx
+      - name: Decide channel tag
+        id: ch
+        run: |
+          if [ "${GITHUB_REF_NAME}" = "main" ]; then
+            echo "channel=ci-main" >> $GITHUB_OUTPUT
+          else
+            echo "channel=ci-develop" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Login to DockerHub (si tu pushes l'image)
+      - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
 
-      - name: Build images using docker-compose
-        run: docker compose build
-    
+      # genere un bake.hcl
+      # inclut toute les cibles ayant "build:" dans le compose
+      # assigne des tags docker hub: :<sha> et :ci-develop|ci-main
+      - name: Generate bake.hcl from docker-compose.yml
+        env:
+          CHANNEL_TAG: ${{ steps.ch.outputs.channel }}
+          DOCKERHUB_ORG: ${{ env.DOCKERHUB_ORG }}
+          GIT_SHA: ${{ github.sha }}
+        run: |
+          python3 -m pip install --user pyyaml >/dev/null 2>&1
+          python3 - << 'PY'
+          import os, sys, yaml
+          compose_path = "docker-compose.yml"
+          data = yaml.safe_load(open(compose_path))
+          services = (data or {}).get("services", {})
+          buildables = [name for name, svc in services.items() if isinstance(svc, dict) and "build" in svc]
+          if not buildables:
+              print("No buildable services found.", file=sys.stderr); sys.exit(1)
 
-      - name: Push image
-        run: docker compose push
+          sha = os.environ['GIT_SHA']
+          org = os.environ["DOCKERHUB_ORG"]
+          channel = os.environ["CHANNEL_TAG"]
+
+          out = []
+          # groupe par defaut: toutes les cibles buildables
+          out.append('group "default" {')
+          out.append("  targets = [%s]" % (", ".join(f'"{t}"' for t in buildables)))
+          out.append("}")
+          out.append("")
+
+          # definition des tags par service
+          for name in buildables:
+              out.append(f'target "{name}" {{')
+              out.append("  tags = [")
+              out.append(f'    "docker.io/{org}/{name}:{sha}",')
+              out.append(f'    "docker.io/{org}/{name}:{channel}"')
+              out.append("  ]")
+              out.append("}")
+              out.append("")
+          open("bake.hcl", "w").write("\n".join(out))
+          PY
+          echo "Generated bake.hcl:"
+          sed -n '1,200p' bake.hcl
+
+      # build et push toutes les cibles du compose (groupe "default") avec tags du bake.hcl
+      - name: Bake & Push (ALL buildable services)
+        uses: docker/bake-action@v5
+        with:
+          files: |
+            docker-compose.yml
+            bake.hcl
+          push: true
+          set: |
+            *.cache-from=type=gha
+            *.cache-to=type=gha,mode=max
+            # Pour multi-arch, décommente:
+            # *.platform=linux/amd64,linux/arm64
