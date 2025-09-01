@@ -65,7 +65,7 @@ jobs:
           echo "services:" > compose.publish.yml
           while read -r svc; do
             echo "  ${svc}:" >> compose.publish.yml
-            echo "    image: toto/payetonkawa:${svc}-${SHA}" >> compose.publish.yml
+            echo "    image: bowo73/payetonkawa:${svc}-${SHA}" >> compose.publish.yml
           done < buildable.txt
           echo "----- compose.publish.yml -----"
           cat compose.publish.yml
@@ -85,8 +85,8 @@ jobs:
         run: |
           set -euo pipefail
           while read -r svc; do
-            SRC="toto/payetonkawa:${svc}-${SHA}"
-            DST="toto/payetonkawa:${svc}-${CHANNEL}"
+            SRC="bowo73/payetonkawa:${svc}-${SHA}"
+            DST="bowo73/payetonkawa:${svc}-${CHANNEL}"
             docker tag  "$SRC" "$DST"
             docker push "$DST"
           done < buildable.txt
