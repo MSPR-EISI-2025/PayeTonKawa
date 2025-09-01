@@ -8,7 +8,7 @@ on:
     branches: [develop, main]
 
 env:
-  DOCKERHUB_REPO: toto/payetonkawa  
+  DOCKERHUB_REPO: bowo73/payetonkawa  
   PROJECT_NAME: pk         
 
 permissions:
