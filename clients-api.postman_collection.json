@@ -1,0 +1,95 @@
+{
+  "info": {
+    "name": "Clients API CRUD",
+    "_postman_id": "c9f3d5ce-1234-5678-9abc-def123456789",
+    "description": "CRUD requests for NestJS Clients API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Create Client",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Acme Corp\",\n  \"username\": \"acme_admin\",\n  \"firstName\": \"Alice\",\n  \"lastName\": \"Johnson\",\n  \"adress_postalCode\": 75001,\n  \"adress_city\": \"Paris\",\n  \"profile_firstName\": \"Alice\",\n  \"profile_lastName\": \"J\",\n  \"company_name\": \"Acme Corp\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:3001/clients",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3001",
+          "path": ["clients"]
+        }
+      }
+    },
+    {
+      "name": "Get All Clients",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "http://localhost:3001/clients?skip=0&take=10&q=acme",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3001",
+          "path": ["clients"],
+          "query": [
+            { "key": "skip", "value": "0" },
+            { "key": "take", "value": "10" },
+            { "key": "q", "value": "acme" }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Get Client by ID",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "http://localhost:3001/clients/1",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3001",
+          "path": ["clients", "1"]
+        }
+      }
+    },
+    {
+      "name": "Update Client",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"adress_city\": \"Lyon\",\n  \"company_name\": \"Acme France\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:3001/clients/1",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3001",
+          "path": ["clients", "1"]
+        }
+      }
+    },
+    {
+      "name": "Delete Client",
+      "request": {
+        "method": "DELETE",
+        "url": {
+          "raw": "http://localhost:3001/clients/1",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3001",
+          "path": ["clients", "1"]
+        }
+      }
+    }
+  ]
+}
+
