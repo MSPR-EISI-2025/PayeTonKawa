@@ -31,7 +31,7 @@ services:
     ports:
       - "32783:3000"
     volumes:
-      - ./logs:/logs
+      - ${LOGS_FOLDER}:/logs
     restart: ${RESTART}
     environment:
       # Rabbit
@@ -45,6 +45,9 @@ services:
       DB_USER: ${CLIENTS_DB_USER}
       DB_PASS: ${CLIENTS_DB_PASS}
       DB_NAME: ${MARIADB_MOCK_DATABASE}
+      # MISCELLANEOUS
+      LOGS_FOLDER: /logs
+      LOG_LEVEL: ${LOG_LEVEL}
     depends_on:
       - db_mock_data
       - rabbitmq
@@ -54,7 +57,7 @@ services:
   backend_orders:
     build: ./app/orders
     volumes:
-      - ./logs:/logs
+      - ${LOGS_FOLDER}:/logs
     restart: ${RESTART}
     environment:
       RABBITMQ_USER: ${RABBITMQ_USER}
@@ -73,7 +76,7 @@ services:
   backend_product:
     build: ./app/product
     volumes:
-      - ./logs:/logs
+      - ${LOGS_FOLDER}:/logs
     restart: ${RESTART}
     environment:
       RABBITMQ_USER: ${RABBITMQ_USER}

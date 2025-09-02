@@ -46,7 +46,7 @@ def fetch_data(endpoint):
 def create_tables(cursor):
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS customers (
-            id VARCHAR(255) PRIMARY KEY,
+            id INT AUTO_INCREMENT PRIMARY KEY,
             createdAt DATETIME,
             name VARCHAR(255),
             username VARCHAR(255),
@@ -62,7 +62,7 @@ def create_tables(cursor):
 
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS products (
-            id VARCHAR(255) PRIMARY KEY,
+            id INT AUTO_INCREMENT PRIMARY KEY,
             createdAt DATETIME,
             name VARCHAR(255),
             price DECIMAL(10,2),
@@ -74,9 +74,9 @@ def create_tables(cursor):
 
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS orders (
-            id VARCHAR(255) PRIMARY KEY,
+            id INT AUTO_INCREMENT PRIMARY KEY,
             createdAt DATETIME,
-            customer_id VARCHAR(255),
+            customer_id INT,
             FOREIGN KEY (customer_id) REFERENCES customers(id)
         )
     """)
@@ -84,22 +84,24 @@ def create_tables(cursor):
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS order_items (
             id INT AUTO_INCREMENT PRIMARY KEY,
-            order_id VARCHAR(255),
-            product_id VARCHAR(255),
+            order_id INT,
+            product_id INT,
             FOREIGN KEY (order_id) REFERENCES orders(id),
             FOREIGN KEY (product_id) REFERENCES products(id)
         )
     """)
 
 
-
 def insert_customers(cursor, customers):
     for c in customers:
         created_at = format_datetime(c["createdAt"])
         cursor.execute("""
-            REPLACE INTO customers VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            INSERT INTO customers (createdAt, name, username, firstName, lastName,
+                                   address_postalCode, address_city,
+                                   profile_firstName, profile_lastName, company_name)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
         """, (
-            c["id"], created_at, c["name"], c["username"],
+            created_at, c["name"], c["username"],
             c["firstName"], c["lastName"],
             c.get("address", {}).get("postalCode"),
             c.get("address", {}).get("city"),
@@ -112,17 +114,18 @@ def insert_orders(cursor, orders, customer_ids, product_ids):
     for o in orders:
         created_at = format_datetime(o["createdAt"])
         customer_id = random.choice(customer_ids)
-        cursor.execute("""
-            REPLACE INTO orders (id, createdAt, customer_id) VALUES (%s, %s, %s)
-        """, (o["id"], created_at, customer_id))
 
-        # Link 1 or 2 random products
+        cursor.execute("""
+            INSERT INTO orders (createdAt, customer_id) VALUES (%s, %s)
+        """, (created_at, customer_id))
+
+        order_id = cursor.lastrowid
+
         linked_products = random.sample(product_ids, k=random.choice([1, 2]))
         for product_id in linked_products:
             cursor.execute("""
                 INSERT INTO order_items (order_id, product_id) VALUES (%s, %s)
-            """, (o["id"], product_id))
-
+            """, (order_id, product_id))
 
 def insert_products(cursor, products):
     for p in products:
@@ -133,9 +136,11 @@ def insert_products(cursor, products):
         except:
             price = 0.0
         cursor.execute("""
-            REPLACE INTO products VALUES (%s, %s, %s, %s, %s, %s, %s)
+            INSERT INTO products (createdAt, name, price, description, color, stock)
+            VALUES (%s, %s, %s, %s, %s, %s)
         """, (
-            p["id"], created_at, p["name"],
+            created_at,
+            p["name"],
             price,
             p.get("details", {}).get("description"),
             p.get("details", {}).get("color"),
