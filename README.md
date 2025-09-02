@@ -11,13 +11,13 @@
 - Un fichier `.env` à la racine
 
 ### Étapes de déploiement
-
-1. `cp .env.prod.sample .env`
-2. compléter les variables vides
-3. **Générer le script SQL avec les utilisateurs pour la db :**
-4. `docker compose up db_mock_data`
-5. `docker compose up db_mock_import`
-6. `make up`
+1. `git submodule update --init --recursive`
+2. `cp .env.prod.sample .env`
+3. compléter les variables vides
+4. **Générer le script SQL avec les utilisateurs pour la db :**
+5. `docker compose up db_mock_data`
+6. `docker compose up db_mock_import`
+7. `make up`
 
 ```bash
 make init-sql
