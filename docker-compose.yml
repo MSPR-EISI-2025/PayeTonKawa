@@ -1,6 +1,5 @@
 version: "3.8"
 services:
-
   mariadb:
     image: mariadb:latest
     environment:
@@ -8,6 +7,7 @@ services:
       MARIADB_DATABASE: ${DB_AUTH_DATABASE}
       MARIADB_USER: ${DB_AUTH_USER}
       MARIADB_PASSWORD: ${DB_AUTH_USER_PASS}
+
     restart: ${RESTART}
     volumes:
       - ./mariaDB/data:/var/lib/mysql:rw
@@ -20,16 +20,18 @@ services:
     environment:
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: admin
-      # db
+      # DB
       KC_DB: mariadb
-      KC_DB_SCHEMA: keycloak
-      # KC_DB_URL: jdbc:mariadb://db_auth:3306/keycloak
-      # KC_DB_URL: jdbc:mariadb://mariadb:3306/keycloak
-      KC_DB_USERNAME: keycloak
-      KC_DB_PASSWORD: keycloakpass
-      # KC_HOSTNAME_STRICT: "false"
-      # KC_HTTP_ENABLED: "true"
+      KC_DB_USERNAME: ${DB_AUTH_USER}
+      KC_DB_PASSWORD: ${DB_AUTH_USER_PASS}
       KC_DB_URL_HOST: mariadb
+      KC_DB_URL_PORT: 3306
+      KC_DB_URL_DATABASE: ${DB_AUTH_DATABASE}
+      # (optionnel) pool plus tolérant au démarrage
+      # KC_DB_POOL_INITIAL_SIZE: 1
+      # KC_DB_POOL_MIN_SIZE: 1
+      # KC_DB_POOL_MAX_SIZE: 10
+
     ports:
       - "8080:8080"
     restart: unless-stopped
@@ -37,7 +39,6 @@ services:
       - mariadb
     networks:
       - app-network
-
   rabbitmq:
     image: rabbitmq:3-management
     container_name: rabbitmq
