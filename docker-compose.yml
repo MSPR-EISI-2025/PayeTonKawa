@@ -45,6 +45,9 @@ services:
       DB_USER: ${CLIENTS_DB_USER}
       DB_PASS: ${CLIENTS_DB_PASS}
       DB_NAME: ${MARIADB_MOCK_DATABASE}
+      # MISCELLANEOUS
+      LOGS_FOLDER: ${LOGS_FOLDER}
+      LOG_LEVEL: ${LOG_LEVEL}
     depends_on:
       - db_mock_data
       - rabbitmq
