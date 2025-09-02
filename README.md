@@ -15,6 +15,9 @@
 1. `cp .env.prod.sample .env`
 2. compléter les variables vides
 3. **Générer le script SQL avec les utilisateurs pour la db :**
+4. `docker compose up db_mock_data`
+5. `docker compose up db_mock_import`
+6. `make up`
 
 ```bash
 make init-sql
