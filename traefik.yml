@@ -44,12 +44,15 @@ services:
       - traefik
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.products.rule=Host(`${KEYCLOAK_SUBDOMAIN}.${TRAEFIK_DOMAIN}`)"
-      - "traefik.http.routers.products.entrypoints=websecure"
-      - "traefik.http.routers.products.tls=true"
-      - "traefik.http.routers.products.tls.certresolver=myresolver"
-      - "traefik.http.services.products.loadbalancer.server.port=3000"
 
+      # HTTPS router
+      - "traefik.http.routers.keycloak.rule=Host(`${KEYCLOAK_SUBDOMAIN}.${TRAEFIK_DOMAIN}`)"
+      - "traefik.http.routers.keycloak.entrypoints=websecure"
+      - "traefik.http.routers.keycloak.tls=true"
+      - "traefik.http.routers.keycloak.tls.certresolver=myresolver"
+
+      # Service -> point to Keycloak's internal port
+      - "traefik.http.services.keycloak.loadbalancer.server.port=8080"
 networks:
   app-network:
     driver: bridge
