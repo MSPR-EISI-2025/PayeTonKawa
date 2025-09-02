@@ -1,0 +1,45 @@
+services:
+  backend_clients:
+    build: ./app/clients
+    networks:
+      - app-network
+      - traefik
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.clients.rule=Host(`${CLIENTS_SUBDOMAIN}.${TRAEFIK_DOMAIN}`)"
+      - "traefik.http.routers.clients.entrypoints=websecure"
+      - "traefik.http.routers.clients.tls=true"
+      - "traefik.http.routers.clients.tls.certresolver=myresolver"
+      - "traefik.http.services.clients.loadbalancer.server.port=3000"
+
+  backend_orders:
+    build: ./app/orders
+    networks:
+      - app-network
+      - traefik
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.orders.rule=Host(`${ORDERS_SUBDOMAIN}.${TRAEFIK_DOMAIN}`)"
+      - "traefik.http.routers.orders.entrypoints=websecure"
+      - "traefik.http.routers.orders.tls=true"
+      - "traefik.http.routers.orders.tls.certresolver=myresolver"
+      - "traefik.http.services.orders.loadbalancer.server.port=3000"
+
+  backend_product:
+    build: ./app/product
+    networks:
+      - app-network
+      - traefik
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.products.rule=Host(`${PRODUCTS_SUBDOMAIN}.${TRAEFIK_DOMAIN}`)"
+      - "traefik.http.routers.products.entrypoints=websecure"
+      - "traefik.http.routers.products.tls=true"
+      - "traefik.http.routers.products.tls.certresolver=myresolver"
+      - "traefik.http.services.products.loadbalancer.server.port=3000"
+
+networks:
+  app-network:
+    driver: bridge
+  traefik:
+    external: true
