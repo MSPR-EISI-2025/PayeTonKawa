@@ -29,7 +29,7 @@ services:
   backend_clients:
     build: ./app/clients
     ports:
-      - ":3000"
+      - "32783:3000"
     volumes:
       - ./logs:/logs
     restart: ${RESTART}
