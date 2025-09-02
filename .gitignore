@@ -1,3 +1,5 @@
 /.idea/
 .env
 ./mock_mariaDB/init/setup-users.sql
+
+mariaDB/*
