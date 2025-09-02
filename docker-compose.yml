@@ -1,6 +1,6 @@
 services:
 
-  mariadb:
+  mariadb_keycloak:
     image: mariadb:latest
     environment:
       MARIADB_ROOT_PASSWORD: rootpass
@@ -9,7 +9,20 @@ services:
       MARIADB_PASSWORD: keycloakpass
     restart: unless-stopped
     volumes:
-      - './KC_DB/data:/var/lib/mysql:rw'
+      - data_keycloak:/var/lib/mysql:rw
+    networks:
+      - app-network
+
+  mariadb_api:
+    image: mariadb:latest
+    environment:
+      MARIADB_ROOT_PASSWORD: rootpass
+      MARIADB_DATABASE: api_db
+      MARIADB_USER: apiuser
+      MARIADB_PASSWORD: apipass
+    restart: unless-stopped
+    volumes:
+      - './KC_DB/data_api:/var/lib/mysql:rw'
     networks:
       - app-network
 
@@ -19,21 +32,16 @@ services:
     environment:
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: admin
-      # db
       KC_DB: mariadb
       KC_DB_SCHEMA: keycloak
-      # KC_DB_URL: jdbc:mariadb://db_auth:3306/keycloak
-      # KC_DB_URL: jdbc:mariadb://mariadb:3306/keycloak
       KC_DB_USERNAME: keycloak
       KC_DB_PASSWORD: keycloakpass
-      # KC_HOSTNAME_STRICT: "false"
-      # KC_HTTP_ENABLED: "true"
-      KC_DB_URL_HOST: mariadb
+      KC_DB_URL_HOST: mariadb_keycloak
     ports:
       - "8080:8080"
     restart: unless-stopped
     depends_on:
-      - mariadb
+      - mariadb_keycloak
     networks:
       - app-network
 
@@ -41,26 +49,35 @@ services:
     build: ./app/clients
     volumes:
       - ./logs:/logs
-    restart: ${RESTART}
+    restart: unless-stopped
     networks:
       - app-network
+    depends_on:
+      - mariadb_api
 
   backend_orders:
     build: ./app/orders
     volumes:
       - ./logs:/logs
-    restart: ${RESTART}
+    restart: unless-stopped
     networks:
       - app-network
+    depends_on:
+      - mariadb_api
 
   backend_product:
     build: ./app/product
     volumes:
       - ./logs:/logs
-    restart: ${RESTART}
+    restart: unless-stopped
     networks:
       - app-network
+    depends_on:
+      - mariadb_api
 
 networks:
   app-network:
     driver: bridge
+
+volumes:
+  data_keycloak:

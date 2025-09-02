@@ -2,22 +2,24 @@
 
 ## Technical stack
 - Docker
-- NestJS
+- DB : mariadb
+- API : NestJS
+- Auth provider : Keycloak
+
+***insert archi shem - Miro***
+
+KC DB has its own db compared to db used mariadb DB
 
 ## Deployment
 ```
-insert how to do it
+git clone git@github.com:MSPR-EISI-2025/PayeTonKawa.git
+git submodule update --init --recursive
+docker compose up
 ```
 
 ## Miscellaneous 
 
  - DB is accessible at  localhost:3306
-
-## Collaborators
-- CHANELIERE Romain
-- CASELLA Théo
-- BOUKHEMIRI Rafik
-- ROY Antoine
 
 ## GitFlow
 ## Branches principales :
@@ -36,3 +38,9 @@ insert how to do it
 - Préparation d’une release : `git checkout -b release/1.0.0 develop`
 
 - Correction urgente : `git checkout -b hotfix/"branche d'origine"/"mon_ticket" main`
+
+## Collaborators
+- CHANELIERE Romain
+- CASELLA Théo
+- BOUKHEMIRI Rafik
+- ROY Antoine

@@ -2,3 +2,4 @@
 .env
 
 mariaDB/*
+KC_DB/*
