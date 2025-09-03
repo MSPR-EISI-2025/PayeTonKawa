@@ -1,0 +1,65 @@
+name: API tests (Postman/Newman)
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [develop, main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: postman-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  discover:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.mk.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - id: mk
+        run: |
+          python3 - <<'PY' > matrix.json
+          import json, glob, os
+          cols = sorted(glob.glob("*.postman_collection.json"))
+          if not cols:
+              raise SystemExit("No *.postman_collection.json at repo root")
+          items = []
+          for c in cols:
+              name = c.replace(".postman_collection.json","")
+              env = f"{name}.postman_environment.json"
+              items.append({"name": name, "coll": c, "env": env})
+          print(json.dumps({"include": items}))
+          PY
+          echo "matrix=$(cat matrix.json)" >> $GITHUB_OUTPUT
+          echo "Discovered collections:"; cat matrix.json | jq .
+
+  run_collections:
+    needs: discover
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.discover.outputs.matrix).include }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Newman
+        run: npm i -g newman newman-reporter-htmlextra
+
+
+
+      - name: Run ${{ matrix.name }}
+        run: |
+          mkdir -p reports
+          newman run "${{ matrix.coll }}" ${{ steps.opts.outputs.opts }} \
+            -r htmlextra --reporter-htmlextra-export "reports/${{ matrix.name }}.html"
+
+      - name: Upload report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: postman-reports
+          path: reports/*.html
