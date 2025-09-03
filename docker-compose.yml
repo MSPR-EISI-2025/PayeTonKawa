@@ -31,7 +31,8 @@ services:
       # KC_DB_POOL_INITIAL_SIZE: 1
       # KC_DB_POOL_MIN_SIZE: 1
       # KC_DB_POOL_MAX_SIZE: 10
-
+      KC_PROXY: edge
+      KC_HOSTNAME_URL: https://keycloak.lucette-pomponette.fr
     ports:
       - "8080:8080"
     restart: unless-stopped
@@ -39,7 +40,6 @@ services:
       - mariadb
     networks:
       - app-network
-
   rabbitmq:
     image: rabbitmq:3-management
     container_name: rabbitmq
@@ -153,6 +153,3 @@ services:
 networks:
   app-network:
     driver: bridge
-
-
-
