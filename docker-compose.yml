@@ -7,7 +7,6 @@ services:
       MARIADB_DATABASE: ${DB_AUTH_DATABASE}
       MARIADB_USER: ${DB_AUTH_USER}
       MARIADB_PASSWORD: ${DB_AUTH_USER_PASS}
-
     restart: ${RESTART}
     volumes:
       - ./mariaDB/data:/var/lib/mysql:rw
@@ -149,7 +148,37 @@ services:
     networks:
       - app-network
 
+  prometheus:
+    image: prom/prometheus:v2.55.0
+    container_name: prometheus
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+    volumes:
+      - ./observability/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    networks:
+      - app-network
+    ports:
+      - "9090:9090"
 
+  grafana:
+    image: grafana/grafana:11.2.0
+    container_name: grafana
+    environment:
+      - GF_SECURITY_ADMIN_USER=${GRAFANA_ADMIN_USER}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASS}
+    depends_on:
+      - prometheus
+    volumes:
+      - grafana-data:/var/lib/grafana
+    networks:
+      - app-network
+    ports:
+      - "3001:3000"
 networks:
   app-network:
     driver: bridge
+
+volumes:
+  prometheus-data:
+  grafana-data:
