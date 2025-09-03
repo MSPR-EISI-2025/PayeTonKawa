@@ -19,8 +19,44 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  jest:
+    name: Unit tests (all APIs)
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        api:
+          - { name: clients,  path: app/clients }
+          - { name: orders,   path: app/orders }
+          - { name: products, path: app/product }
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 0
+          token: ${{ secrets.GH_SUBMODULES_TOKEN }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: ${{ matrix.api.path }}/package-lock.json
+
+      - name: Install & test
+        working-directory: ${{ matrix.api.path }}
+        run: |
+          npm ci
+          npm test -- --ci --coverage
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-${{ matrix.api.name }}
+          path: ${{ matrix.api.path }}/coverage
+
   build-and-push:
     runs-on: ubuntu-latest
+    needs: jest
     steps:
       - name: Checkout (root + private submodules)
         uses: actions/checkout@v4
