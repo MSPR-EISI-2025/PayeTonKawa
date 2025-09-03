@@ -55,7 +55,7 @@ jobs:
         run: |
           mkdir -p reports
           newman run "${{ matrix.coll }}" ${{ steps.opts.outputs.opts }} \
-            -r htmlextra --reporter-htmlextra-export "reports/${{ matrix.name }}.html"
+            -r cli,htmlextra --reporter-htmlextra-export "reports/${{ matrix.name }}.html" --verbose
 
       - name: Upload report
         if: always()
