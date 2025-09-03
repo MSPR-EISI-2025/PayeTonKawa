@@ -6,11 +6,14 @@ services:
       - traefik
     labels:
       - "traefik.enable=true"
+      - "traefik.docker.network=traefik"
       - "traefik.http.routers.clients.rule=Host(`${CLIENTS_SUBDOMAIN}.${TRAEFIK_DOMAIN}`)"
       - "traefik.http.routers.clients.entrypoints=websecure"
       - "traefik.http.routers.clients.tls=true"
       - "traefik.http.routers.clients.tls.certresolver=myresolver"
       - "traefik.http.services.clients.loadbalancer.server.port=3000"
+      # 🔒 JWT validation (and optionally your hardening headers)
+      - "traefik.http.routers.clients.middlewares=jwt-kc@file,hardening@docker"
 
   backend_orders:
     build: ./app/orders
@@ -19,11 +22,14 @@ services:
       - traefik
     labels:
       - "traefik.enable=true"
+      - "traefik.docker.network=traefik"
       - "traefik.http.routers.orders.rule=Host(`${ORDERS_SUBDOMAIN}.${TRAEFIK_DOMAIN}`)"
       - "traefik.http.routers.orders.entrypoints=websecure"
       - "traefik.http.routers.orders.tls=true"
       - "traefik.http.routers.orders.tls.certresolver=myresolver"
       - "traefik.http.services.orders.loadbalancer.server.port=3000"
+      # 🔒 JWT validation
+      - "traefik.http.routers.orders.middlewares=jwt-kc@file,hardening@docker"
 
   backend_product:
     build: ./app/product
@@ -32,11 +38,14 @@ services:
       - traefik
     labels:
       - "traefik.enable=true"
+      - "traefik.docker.network=traefik"
       - "traefik.http.routers.products.rule=Host(`${PRODUCTS_SUBDOMAIN}.${TRAEFIK_DOMAIN}`)"
       - "traefik.http.routers.products.entrypoints=websecure"
       - "traefik.http.routers.products.tls=true"
       - "traefik.http.routers.products.tls.certresolver=myresolver"
       - "traefik.http.services.products.loadbalancer.server.port=3000"
+      # 🔒 JWT validation
+      - "traefik.http.routers.products.middlewares=jwt-kc@file,hardening@docker"
 
   keycloak:
     networks:
@@ -44,14 +53,13 @@ services:
       - traefik
     labels:
       - "traefik.enable=true"
+      - "traefik.docker.network=traefik"
 
-      # HTTPS router
       - "traefik.http.routers.keycloak.rule=Host(`${KEYCLOAK_SUBDOMAIN}.${TRAEFIK_DOMAIN}`)"
       - "traefik.http.routers.keycloak.entrypoints=websecure"
       - "traefik.http.routers.keycloak.tls=true"
       - "traefik.http.routers.keycloak.tls.certresolver=myresolver"
 
-      # Service -> point to Keycloak's internal port
       - "traefik.http.services.keycloak.loadbalancer.server.port=8080"
 
   grafana:
@@ -66,6 +74,7 @@ services:
       - "traefik.http.routers.grafana.tls=true"
       - "traefik.http.routers.grafana.tls.certresolver=myresolver"
       - "traefik.http.services.grafana.loadbalancer.server.port=3000"
+
 
 networks:
   app-network:
