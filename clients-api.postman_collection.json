@@ -18,10 +18,9 @@
           "raw": "{\n  \"name\": \"Acme Corp\",\n  \"username\": \"acme_admin\",\n  \"firstName\": \"Alice\",\n  \"lastName\": \"Johnson\",\n  \"adress_postalCode\": 75001,\n  \"adress_city\": \"Paris\",\n  \"profile_firstName\": \"Alice\",\n  \"profile_lastName\": \"J\",\n  \"company_name\": \"Acme Corp\"\n}"
         },
         "url": {
-          "raw": "http://localhost:3001/clients",
-          "protocol": "http",
-          "host": ["localhost"],
-          "port": "3001",
+          "raw": " https://clients.lucette-pomponette.fr/clients",
+          "protocol": "https",
+          "host": ["clients", "lucette-pomponette", "fr"],
           "path": ["clients"]
         }
       }
@@ -31,10 +30,9 @@
       "request": {
         "method": "GET",
         "url": {
-          "raw": "http://localhost:3001/clients?skip=0&take=10&q=acme",
-          "protocol": "http",
-          "host": ["localhost"],
-          "port": "3001",
+          "raw": " https://clients.lucette-pomponette.fr/clients?skip=0&take=10&q=acme",
+          "protocol": "https",
+          "host": ["clients", "lucette-pomponette", "fr"],
           "path": ["clients"],
           "query": [
             { "key": "skip", "value": "0" },
@@ -49,10 +47,9 @@
       "request": {
         "method": "GET",
         "url": {
-          "raw": "http://localhost:3001/clients/1",
-          "protocol": "http",
-          "host": ["localhost"],
-          "port": "3001",
+          "raw": " https://clients.lucette-pomponette.fr/clients/1",
+          "protocol": "https",
+          "host": ["clients", "lucette-pomponette", "fr"],
           "path": ["clients", "1"]
         }
       }
@@ -69,10 +66,9 @@
           "raw": "{\n  \"adress_city\": \"Lyon\",\n  \"company_name\": \"Acme France\"\n}"
         },
         "url": {
-          "raw": "http://localhost:3001/clients/1",
-          "protocol": "http",
-          "host": ["localhost"],
-          "port": "3001",
+          "raw": " https://clients.lucette-pomponette.fr/clients/1",
+          "protocol": "https",
+          "host": ["clients", "lucette-pomponette", "fr"],
           "path": ["clients", "1"]
         }
       }
@@ -82,10 +78,9 @@
       "request": {
         "method": "DELETE",
         "url": {
-          "raw": "http://localhost:3001/clients/1",
-          "protocol": "http",
-          "host": ["localhost"],
-          "port": "3001",
+          "raw": " https://clients.lucette-pomponette.fr/clients/1",
+          "protocol": "https",
+          "host": ["clients", "lucette-pomponette", "fr"],
           "path": ["clients", "1"]
         }
       }
