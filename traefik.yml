@@ -1,71 +1,75 @@
 services:
   backend_clients:
     build: ./app/clients
-    networks:
-      - app-network
-      - traefik
+    networks: [app-network, traefik]
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=traefik"
+
       - "traefik.http.routers.clients.rule=Host(`${CLIENTS_SUBDOMAIN}.${TRAEFIK_DOMAIN}`)"
       - "traefik.http.routers.clients.entrypoints=websecure"
       - "traefik.http.routers.clients.tls=true"
       - "traefik.http.routers.clients.tls.certresolver=myresolver"
       - "traefik.http.services.clients.loadbalancer.server.port=3000"
-      # 🔒 JWT validation (and optionally your hardening headers)
-      - "traefik.http.routers.clients.middlewares=jwt-kc@file,hardening@docker"
+
+      # 🔒 JWT for CLIENTS API (points to jwt-kc-clients in /config/jwt.yml)
+      - "traefik.http.routers.clients.middlewares=jwt-kc-clients@file,hardening@docker"
+
+      # 🔐 Define a reusable 'hardening' middleware (docker provider)
+      - "traefik.http.middlewares.hardening.headers.frameDeny=true"
+      - "traefik.http.middlewares.hardening.headers.contentTypeNosniff=true"
+      - "traefik.http.middlewares.hardening.headers.browserXssFilter=true"
+      - "traefik.http.middlewares.hardening.headers.stsSeconds=31536000"
+      - "traefik.http.middlewares.hardening.headers.stsIncludeSubdomains=true"
+      - "traefik.http.middlewares.hardening.headers.stsPreload=true"
+      # (optional gzip)
+      # - "traefik.http.middlewares.compress.compress=true"
 
   backend_orders:
     build: ./app/orders
-    networks:
-      - app-network
-      - traefik
+    networks: [app-network, traefik]
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=traefik"
+
       - "traefik.http.routers.orders.rule=Host(`${ORDERS_SUBDOMAIN}.${TRAEFIK_DOMAIN}`)"
       - "traefik.http.routers.orders.entrypoints=websecure"
       - "traefik.http.routers.orders.tls=true"
       - "traefik.http.routers.orders.tls.certresolver=myresolver"
       - "traefik.http.services.orders.loadbalancer.server.port=3000"
-      # 🔒 JWT validation
-      - "traefik.http.routers.orders.middlewares=jwt-kc@file,hardening@docker"
+
+      # 🔒 JWT for ORDERS API
+      - "traefik.http.routers.orders.middlewares=jwt-kc-orders@file,hardening@docker"
 
   backend_product:
     build: ./app/product
-    networks:
-      - app-network
-      - traefik
+    networks: [app-network, traefik]
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=traefik"
+
       - "traefik.http.routers.products.rule=Host(`${PRODUCTS_SUBDOMAIN}.${TRAEFIK_DOMAIN}`)"
       - "traefik.http.routers.products.entrypoints=websecure"
       - "traefik.http.routers.products.tls=true"
       - "traefik.http.routers.products.tls.certresolver=myresolver"
       - "traefik.http.services.products.loadbalancer.server.port=3000"
-      # 🔒 JWT validation
-      - "traefik.http.routers.products.middlewares=jwt-kc@file,hardening@docker"
+
+      # 🔒 JWT for PRODUCTS API
+      - "traefik.http.routers.products.middlewares=jwt-kc-products@file,hardening@docker"
 
   keycloak:
-    networks:
-      - app-network
-      - traefik
+    networks: [app-network, traefik]
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=traefik"
-
       - "traefik.http.routers.keycloak.rule=Host(`${KEYCLOAK_SUBDOMAIN}.${TRAEFIK_DOMAIN}`)"
       - "traefik.http.routers.keycloak.entrypoints=websecure"
       - "traefik.http.routers.keycloak.tls=true"
       - "traefik.http.routers.keycloak.tls.certresolver=myresolver"
-
       - "traefik.http.services.keycloak.loadbalancer.server.port=8080"
 
   grafana:
-    networks:
-      - app-network
-      - traefik
+    networks: [app-network, traefik]
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=traefik"
@@ -74,7 +78,6 @@ services:
       - "traefik.http.routers.grafana.tls=true"
       - "traefik.http.routers.grafana.tls.certresolver=myresolver"
       - "traefik.http.services.grafana.loadbalancer.server.port=3000"
-
 
 networks:
   app-network:
