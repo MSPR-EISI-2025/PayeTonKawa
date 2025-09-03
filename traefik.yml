@@ -53,6 +53,20 @@ services:
 
       # Service -> point to Keycloak's internal port
       - "traefik.http.services.keycloak.loadbalancer.server.port=8080"
+
+  grafana:
+    networks:
+      - app-network
+      - traefik
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=traefik"
+      - "traefik.http.routers.grafana.rule=Host(`grafana.${TRAEFIK_DOMAIN}`)"
+      - "traefik.http.routers.grafana.entrypoints=websecure"
+      - "traefik.http.routers.grafana.tls=true"
+      - "traefik.http.routers.grafana.tls.certresolver=myresolver"
+      - "traefik.http.services.grafana.loadbalancer.server.port=3000"
+
 networks:
   app-network:
     driver: bridge
