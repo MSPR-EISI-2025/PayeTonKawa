@@ -18,7 +18,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       DOCKERHUB_REPO: bowo73/payetonkawa        
-      DEPLOY_PATH: /PayeTonKawa/deployment
+      DEPLOY_PATH: /home/${{ secrets.SSH_USER }}/PayeTonKawa/deployment
     steps:
       - uses: actions/checkout@v4
         with:
