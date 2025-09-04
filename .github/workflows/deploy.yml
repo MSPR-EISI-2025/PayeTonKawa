@@ -81,6 +81,16 @@ jobs:
           echo "UPLOAD_SOURCES=$LIST" >> "$GITHUB_ENV"
           echo " Upload sources: $LIST"
 
+      - name: Probe SSH reachability
+        run: |
+          set -e
+          HOST='${{ secrets.SSH_HOST }}'
+          PORT='${{ secrets.SSH_PORT }}'
+          [ -z "$PORT" ] && PORT=22
+          echo "Probing $HOST:$PORT ..."
+          sudo apt-get update -y >/dev/null && sudo apt-get install -y netcat >/dev/null
+          nc -vz -w 5 "$HOST" "$PORT"
+
       # créer le répertoire cible côté serveur
       - name: Ensure remote folder exists
         uses: appleboy/ssh-action@v1.0.3
