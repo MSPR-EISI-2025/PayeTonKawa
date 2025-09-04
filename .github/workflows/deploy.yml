@@ -151,7 +151,7 @@ jobs:
             set -e
             cd "${DEPLOY_PATH}"
             echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
-            docker compose -f docker-compose.yml -f compose.deploy.yml --profile inporter pull
-            docker compose -f docker-compose.yml -f compose.deploy.yml --profile inporter up -d --remove-orphans
+            docker-compose -f docker-compose.yml -f compose.deploy.yml --profile inporter pull
+            docker-compose -f docker-compose.yml -f compose.deploy.yml --profile inporter up -d --remove-orphans
 
 
