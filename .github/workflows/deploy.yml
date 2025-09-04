@@ -55,7 +55,44 @@ jobs:
           echo "----- compose.deploy.yml -----"
           cat compose.deploy.yml
 
-      # copie docker-compose.yml + override sur le serveur
+      # verif que les fichiers existent
+      - name: Check files before upload
+        run: |
+          set -e
+          ls -lah
+          test -f docker-compose.yml || { echo "docker-compose.yml manquant à la racine"; exit 1; }
+          test -f compose.deploy.yml || { echo "compose.deploy.yml manquant (step de génération non exécutée ?)"; exit 1; }
+          if [ -f .env.prod.sample ]; then
+            echo ".env.prod.sample présent"
+          else
+            echo "::warning::.env.prod.sample non trouvé, on l'ignorera pour l'upload"
+          fi
+
+      # construire la liste 'source' (format attendu: chemins separes par des virgules)
+      - name: Build upload source list
+        id: upl
+        shell: bash
+        run: |
+          set -e
+          FILES=(docker-compose.yml compose.deploy.yml)
+          [ -f .env.prod.sample ] && FILES+=(".env.prod.sample")
+          LIST=$(printf "%s," "${FILES[@]}" | sed 's/,$//')
+          echo "list=$LIST" >> "$GITHUB_OUTPUT"
+          echo "UPLOAD_SOURCES=$LIST" >> "$GITHUB_ENV"
+          echo " Upload sources: $LIST"
+
+      # créer le répertoire cible côté serveur
+      - name: Ensure remote folder exists
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT || 22 }}
+          script: |
+            mkdir -p "${{ env.DEPLOY_PATH }}"
+
+      # upload sans archive vide
       - name: Upload compose files to server
         uses: appleboy/scp-action@v0.1.7
         with:
@@ -63,10 +100,10 @@ jobs:
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.SSH_PORT || 22 }}
-          source: |
-            docker-compose.yml
-            compose.deploy.yml
+          # IMPORTANT: liste separe par des virgules (pas de multilignes)
+          source: ${{ steps.upl.outputs.list }}
           target: ${{ env.DEPLOY_PATH }}
+
 
       # connexion ssh et deploiement
       - name: Deploy on server (pull & up)
