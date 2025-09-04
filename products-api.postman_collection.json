@@ -1,0 +1,139 @@
+{
+  "info": {
+    "name": "Products API",
+    "_postman_id": "a4f4b2e8-9c11-4c7b-b32e-8a2d91e7e123",
+    "description": "CRUD endpoints for Products service",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Get Access Token",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/x-www-form-urlencoded" }
+        ],
+        "body": {
+          "mode": "urlencoded",
+          "urlencoded": [
+            { "key": "client_id", "value": "ptk-clients" },
+            { "key": "client_secret", "value": "sw8kjWpvSD1YpbDUIf8rlqJWwNF7DsQE" },
+            { "key": "grant_type", "value": "password" },
+            { "key": "username", "value": "test-user-clients" },
+            { "key": "password", "value": "test1234" }
+          ]
+        },
+        "url": {
+          "raw": "https://keycloak.lucette-pomponette.fr/realms/PayeTonKawa/protocol/openid-connect/token",
+          "protocol": "https",
+          "host": [
+            "keycloak.lucette-pomponette.fr"
+          ],
+          "path": [
+            "realms",
+            "PayeTonKawa",
+            "protocol",
+            "openid-connect",
+            "token"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Create Product",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{access_token}}" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Coffee Mug\",\n  \"price\": 12.9,\n  \"description\": \"Ceramic mug 350ml\",\n  \"color\": \"red\",\n  \"stock\": 42\n}"
+        },
+        "url": {
+          "raw": "https://products.lucette-pomponette.fr/products",
+          "protocol": "https",
+          "host": ["products.lucette-pomponette.fr"],
+          "path": ["products"]
+        }
+      }
+    },
+    {
+      "name": "Get All Products",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{access_token}}" }
+        ],
+        "url": {
+          "raw": "https://products.lucette-pomponette.fr/products?skip=0&take=10&q=mug",
+          "protocol": "https",
+          "host": ["products.lucette-pomponette.fr"],
+          "path": ["products"],
+          "query": [
+            { "key": "skip", "value": "0" },
+            { "key": "take", "value": "10" },
+            { "key": "q", "value": "mug" }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Get Product by ID",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{access_token}}" }
+        ],
+        "url": {
+          "raw": "https://products.lucette-pomponette.fr/products/1",
+          "protocol": "https",
+          "host": ["products.lucette-pomponette.fr"],
+          "path": ["products", "1"]
+        }
+      }
+    },
+    {
+      "name": "Update Product",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{access_token}}" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"price\": 14.5,\n  \"stock\": 30\n}"
+        },
+        "url": {
+          "raw": "https://products.lucette-pomponette.fr/products/1",
+          "protocol": "https",
+          "host": ["products.lucette-pomponette.fr"],
+          "path": ["products", "1"]
+        }
+      }
+    },
+    {
+      "name": "Delete Product",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{access_token}}" }
+        ],
+        "url": {
+          "raw": "https://products.lucette-pomponette.fr/products/1",
+          "protocol": "https",
+          "host": ["products.lucette-pomponette.fr"],
+          "path": ["products", "1"]
+        }
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "access_token",
+      "value": ""
+    }
+  ]
+}
