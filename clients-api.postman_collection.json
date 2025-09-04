@@ -1,24 +1,54 @@
 {
   "info": {
-    "name": "Clients API CRUD",
-    "_postman_id": "c9f3d5ce-1234-5678-9abc-def123456789",
-    "description": "CRUD requests for NestJS Clients API",
+    "name": "Clients API",
+    "_postman_id": "12345678-abcd-efgh-ijkl-9876543210",
+    "description": "Postman collection for testing the Clients API with Keycloak JWT auth",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
     {
-      "name": "Create Client",
+      "name": "Get Keycloak Token",
       "request": {
         "method": "POST",
         "header": [
-          { "key": "Content-Type", "value": "application/json" }
+          {
+            "key": "Content-Type",
+            "value": "application/x-www-form-urlencoded",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "urlencoded",
+          "urlencoded": [
+            { "key": "client_id", "value": "ptk-clients", "type": "text" },
+            { "key": "client_secret", "value": "sw8kjWpvSD1YpbDUIf8rlqJWwNF7DsQE", "type": "text" },
+            { "key": "grant_type", "value": "password", "type": "text" },
+            { "key": "username", "value": "test-user-clients", "type": "text" },
+            { "key": "password", "value": "test1234", "type": "text" }
+          ]
+        },
+        "url": {
+          "raw": "https://keycloak.lucette-pomponette.fr/realms/PayeTonKawa/protocol/openid-connect/token",
+          "protocol": "https",
+          "host": ["keycloak", "lucette-pomponette", "fr"],
+          "path": ["realms", "PayeTonKawa", "protocol", "openid-connect", "token"]
+        }
+      }
+    },
+    {
+      "name": "Create Customer",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{jwt}}", "type": "text" },
+          { "key": "Content-Type", "value": "application/json", "type": "text" }
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"name\": \"Acme Corp\",\n  \"username\": \"acme_admin\",\n  \"firstName\": \"Alice\",\n  \"lastName\": \"Johnson\",\n  \"adress_postalCode\": 75001,\n  \"adress_city\": \"Paris\",\n  \"profile_firstName\": \"Alice\",\n  \"profile_lastName\": \"J\",\n  \"company_name\": \"Acme Corp\"\n}"
+          "raw": "{\n  \"name\": \"Alice\",\n  \"username\": \"alice01\",\n  \"firstName\": \"Alice\",\n  \"lastName\": \"Liddell\",\n  \"address_postalCode\": 75001,\n  \"address_city\": \"Paris\",\n  \"profile_firstName\": \"Alice\",\n  \"profile_lastName\": \"Liddell\",\n  \"company_name\": \"Wonderland Ltd.\"\n}"
         },
         "url": {
-          "raw": " https://clients.lucette-pomponette.fr/clients",
+          "raw": "https://clients.lucette-pomponette.fr/clients",
           "protocol": "https",
           "host": ["clients", "lucette-pomponette", "fr"],
           "path": ["clients"]
@@ -26,28 +56,34 @@
       }
     },
     {
-      "name": "Get All Clients",
+      "name": "Get All Customers",
       "request": {
         "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{jwt}}", "type": "text" }
+        ],
         "url": {
-          "raw": " https://clients.lucette-pomponette.fr/clients?skip=0&take=10&q=acme",
+          "raw": "https://clients.lucette-pomponette.fr/clients?skip=0&take=10&q=alice",
           "protocol": "https",
           "host": ["clients", "lucette-pomponette", "fr"],
           "path": ["clients"],
           "query": [
             { "key": "skip", "value": "0" },
             { "key": "take", "value": "10" },
-            { "key": "q", "value": "acme" }
+            { "key": "q", "value": "alice" }
           ]
         }
       }
     },
     {
-      "name": "Get Client by ID",
+      "name": "Get Customer by ID",
       "request": {
         "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{jwt}}", "type": "text" }
+        ],
         "url": {
-          "raw": " https://clients.lucette-pomponette.fr/clients/1",
+          "raw": "https://clients.lucette-pomponette.fr/clients/1",
           "protocol": "https",
           "host": ["clients", "lucette-pomponette", "fr"],
           "path": ["clients", "1"]
@@ -55,18 +91,19 @@
       }
     },
     {
-      "name": "Update Client",
+      "name": "Update Customer",
       "request": {
         "method": "PATCH",
         "header": [
-          { "key": "Content-Type", "value": "application/json" }
+          { "key": "Authorization", "value": "Bearer {{jwt}}", "type": "text" },
+          { "key": "Content-Type", "value": "application/json", "type": "text" }
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"adress_city\": \"Lyon\",\n  \"company_name\": \"Acme France\"\n}"
+          "raw": "{\n  \"name\": \"Alice Updated\",\n  \"company_name\": \"New Wonderland Ltd.\"\n}"
         },
         "url": {
-          "raw": " https://clients.lucette-pomponette.fr/clients/1",
+          "raw": "https://clients.lucette-pomponette.fr/clients/1",
           "protocol": "https",
           "host": ["clients", "lucette-pomponette", "fr"],
           "path": ["clients", "1"]
@@ -74,17 +111,25 @@
       }
     },
     {
-      "name": "Delete Client",
+      "name": "Delete Customer",
       "request": {
         "method": "DELETE",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{jwt}}", "type": "text" }
+        ],
         "url": {
-          "raw": " https://clients.lucette-pomponette.fr/clients/1",
+          "raw": "https://clients.lucette-pomponette.fr/clients/1",
           "protocol": "https",
           "host": ["clients", "lucette-pomponette", "fr"],
           "path": ["clients", "1"]
         }
       }
     }
+  ],
+  "variable": [
+    {
+      "key": "jwt",
+      "value": "<paste-your-keycloak-access-token-here>"
+    }
   ]
 }
-
