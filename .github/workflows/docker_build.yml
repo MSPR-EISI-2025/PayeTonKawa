@@ -112,7 +112,7 @@ jobs:
 
       - name: Compose push
         run: |
-          docker compose -f docker-compose.yml -f compose.publish.yml push $(cat buildable.txt)
+          docker compose --env-file .env.prod.sample -f docker-compose.yml -f compose.publish.yml --profile importer push $(cat buildable.txt)
 
       - name: Retag & push channel tags
         env:
