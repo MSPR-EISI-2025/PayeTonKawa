@@ -1,0 +1,71 @@
+version: "3.8"
+services:
+  backend_clients:
+    build: ./app/clients
+    ports:
+      - "32783:3000"
+    volumes:
+      - ${LOGS_FOLDER}:/logs
+    restart: ${RESTART}
+    environment:
+      # Rabbit
+      RABBITMQ_USER: ${RABBITMQ_USER}
+      RABBITMQ_PASS: ${RABBITMQ_PASS}
+      RABBITMQ_HOST: ${RABBITMQ_HOST}
+      RABBITMQ_PORT: ${RABBITMQ_MAIN_PORT}
+      RABBITMQ_QUEUE: ${RABBITMQ_QUEUE_CLIENTS}
+      NODE_ENV: ${NODE_ENV}
+      # DB (mock data DB)
+      DB_USER: ${CLIENTS_DB_USER}
+      DB_PASS: ${CLIENTS_DB_PASS}
+      DB_NAME: ${MARIADB_MOCK_DATABASE}
+      # MISCELLANEOUS
+      LOGS_FOLDER: /logs
+      LOG_LEVEL: ${LOG_LEVEL}
+    depends_on:
+      - db_mock_data
+      - rabbitmq
+    networks:
+      - app-network
+
+  backend_orders:
+    build: ./app/orders
+    volumes:
+      - ${LOGS_FOLDER}:/logs
+    restart: ${RESTART}
+    environment:
+      RABBITMQ_USER: ${RABBITMQ_USER}
+      RABBITMQ_PASS: ${RABBITMQ_PASS}
+      RABBITMQ_HOST: ${RABBITMQ_HOST}
+      RABBITMQ_PORT: ${RABBITMQ_MAIN_PORT}
+      RABBITMQ_QUEUE: ${RABBITMQ_QUEUE_ORDERS}
+      NODE_ENV: ${NODE_ENV}
+      DB_USER: ${ORDERS_DB_USER}
+      DB_PASS: ${ORDERS_DB_PASS}
+    depends_on:
+      - rabbitmq
+    networks:
+      - app-network
+
+  backend_product:
+    build: ./app/product
+    volumes:
+      - ${LOGS_FOLDER}:/logs
+    restart: ${RESTART}
+    environment:
+      RABBITMQ_USER: ${RABBITMQ_USER}
+      RABBITMQ_PASS: ${RABBITMQ_PASS}
+      RABBITMQ_HOST: ${RABBITMQ_HOST}
+      RABBITMQ_PORT: ${RABBITMQ_MAIN_PORT}
+      RABBITMQ_QUEUE: ${RABBITMQ_QUEUE_PRODUCTS}
+      NODE_ENV: ${NODE_ENV}
+      DB_USER: ${PRODUCTS_DB_USER}
+      DB_PASS: ${PRODUCTS_DB_PASS}
+    depends_on:
+      - rabbitmq
+    networks:
+      - app-network
+      
+networks:
+  app-network:
+    driver: bridge

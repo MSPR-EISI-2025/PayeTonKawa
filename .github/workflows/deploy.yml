@@ -8,6 +8,7 @@ env:
   DEPLOY_PATH: /home/${{ secrets.SSH_USER }}/PayeTonKawa   # dossier cible sur le serveur
   ENV_FILE: .env.prod.sample           # env-file à utiliser côté serveur
   PROFILE: inporter                    # profile docker compose à activer
+  API_SERVICES: backend_clients backend_orders backend_product
 
 permissions:
   contents: read
@@ -68,19 +69,13 @@ jobs:
             echo "::warning::.env.prod.sample non trouvé, on l'ignorera pour l'upload"
           fi
 
-      - name: Préparer le fichier .env à partir de .env.prod.sample
-        run: |
-          set -e
-          test -f .env.prod.sample || { echo "::error::.env.prod.sample manquant"; exit 1; }
-          cp -f .env.prod.sample .env
-
       # construire la liste 'source' (format attendu: chemins separes par des virgules)
       - name: Build upload source list
         id: upl
         shell: bash
         run: |
           set -e
-          FILES=(docker-compose.yml compose.deploy.yml .env)
+          FILES=(docker-compose.yml compose.deploy.yml)
           [ -f .env.prod.sample ] && FILES+=(".env.prod.sample")
           LIST=$(printf "%s," "${FILES[@]}" | sed 's/,$//')
           echo "list=$LIST" >> "$GITHUB_OUTPUT"
@@ -112,13 +107,27 @@ jobs:
           #port: ${{ secrets.SSH_PORT }}
           #script: |
           #  ls /PayeTonKawa
-
-      - name: Préparer le fichier .env à partir de .env.prod.sample
+      - name: Make compose.deploy.yml (APIs only)
+        env:
+          CHANNEL: ${{ steps.ch.outputs.channel }}
         run: |
-          set -e
-          test -f .env.prod.sample || { echo "::error::.env.prod.sample manquant"; exit 1; }
-          cp -f .env.prod.sample .env
-
+          python3 - <<'PY' > compose.deploy.yml
+          import os, sys, yaml
+          repo    = os.environ['DOCKERHUB_REPO']
+          chan    = os.environ['CHANNEL']
+          apis    = (os.environ.get('API_SERVICES') or '').split()
+          if not apis: sys.exit("No API_SERVICES defined")
+          with open('docker-compose.yml') as f:
+              base = yaml.safe_load(f) or {}
+          existing = set((base.get('services') or {}).keys())
+          miss = [s for s in apis if s not in existing]
+          if miss: print(f"Services absents dans compose: {miss}", file=sys.stderr)
+          out = {'services': {s: {'image': f'{repo}:{s}-{chan}'} for s in apis if s in existing}}
+          yaml.safe_dump(out, sys.stdout, sort_keys=False)
+          PY
+          echo "----- compose.deploy.yml -----"
+          cat compose.deploy.yml
+          
       # upload sans archive vide
       - name: Upload compose files to server
         uses: appleboy/scp-action@v0.1.7
@@ -141,17 +150,18 @@ jobs:
           DEPLOY_PATH: ${{ env.DEPLOY_PATH }}
           ENV_FILE: ${{ env.ENV_FILE }}
           PROFILE: ${{ env.PROFILE }}
+          API_SERVICES: ${{ env.API_SERVICES }}
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.SSH_PORT || 22 }}
-          envs: DOCKER_USERNAME,DOCKER_PASSWORD,DEPLOY_PATH,ENV_FILE,PROFILE  #export vers la session ssh
+          envs: DOCKER_USERNAME,DOCKER_PASSWORD,DEPLOY_PATH,ENV_FILE,PROFILE,API_SERVICE #export vers la session ssh
           script: |
             set -e
             cd "${DEPLOY_PATH}"
             echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
-            docker-compose -f docker-compose.yml -f compose.deploy.yml --profile inporter pull
-            docker-compose -f docker-compose.yml -f compose.deploy.yml --profile inporter up -d --remove-orphans
+            docker-compose -f docker-compose_deploy.yml -f compose.deploy.yml pull ${API_SERVICES}
+            docker-compose -f docker-compose_deploy.yml -f compose.deploy.yml  -d --remove-orphans ${API_SERVICES}
 
 
