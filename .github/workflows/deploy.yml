@@ -97,15 +97,15 @@ jobs:
 
 
       # créer le répertoire cible côté serveur
-      - name: Ensure remote folder exists
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          port: ${{ secrets.SSH_PORT }}
-          script: |
-            ls /PayeTonKawa
+      #- name: Ensure remote folder exists
+       # uses: appleboy/ssh-action@v1.0.3
+       # with:
+        #  host: ${{ secrets.SSH_HOST }}
+         # username: ${{ secrets.SSH_USER }}
+          #key: ${{ secrets.SSH_PRIVATE_KEY }}
+          #port: ${{ secrets.SSH_PORT }}
+          #script: |
+          #  ls /PayeTonKawa
 
       # upload sans archive vide
       - name: Upload compose files to server
