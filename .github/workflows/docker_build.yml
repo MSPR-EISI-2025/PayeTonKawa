@@ -108,7 +108,7 @@ jobs:
 
       - name: Compose build (tagged)
         run: |
-          docker compose -f docker-compose.yml -f compose.publish.yml build $(cat buildable.txt)
+          docker compose --env-file .env.dev.sample -f docker-compose.yml -f compose.publish.yml --profile importer build $(cat buildable.txt)
 
       - name: Compose push
         run: |
