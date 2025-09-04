@@ -1,44 +1,45 @@
 version: "3.8"
 services:
-  mariadb:
-    image: mariadb:latest
-    environment:
-      MARIADB_ROOT_PASSWORD: ${DB_AUTH_PASS}
-      MARIADB_DATABASE: ${DB_AUTH_DATABASE}
-      MARIADB_USER: ${DB_AUTH_USER}
-      MARIADB_PASSWORD: ${DB_AUTH_USER_PASS}
-    restart: ${RESTART}
-    volumes:
-      - ./mariaDB/data:/var/lib/mysql:rw
-    networks:
-      - app-network
+#  mariadb:
+#    image: mariadb:latest
+#    environment:
+#      MARIADB_ROOT_PASSWORD: ${DB_AUTH_PASS}
+#      MARIADB_DATABASE: ${DB_AUTH_DATABASE}
+#      MARIADB_USER: ${DB_AUTH_USER}
+#      MARIADB_PASSWORD: ${DB_AUTH_USER_PASS}
+#    restart: ${RESTART}
+#    volumes:
+#      - ./mariaDB/data:/var/lib/mysql:rw
+#    networks:
+#      - app-network
 
-  keycloak:
-    image: quay.io/keycloak/keycloak:22.0.0
-    command: start
-    environment:
-      KEYCLOAK_ADMIN: admin
-      KEYCLOAK_ADMIN_PASSWORD: admin
-      # DB
-      KC_DB: mariadb
-      KC_DB_USERNAME: ${DB_AUTH_USER}
-      KC_DB_PASSWORD: ${DB_AUTH_USER_PASS}
-      KC_DB_URL_HOST: mariadb
-      KC_DB_URL_PORT: 3306
-      KC_DB_URL_DATABASE: ${DB_AUTH_DATABASE}
-      # (optionnel) pool plus tolérant au démarrage
-      # KC_DB_POOL_INITIAL_SIZE: 1
-      # KC_DB_POOL_MIN_SIZE: 1
-      # KC_DB_POOL_MAX_SIZE: 10
-      KC_PROXY: edge
-      KC_HOSTNAME_URL: https://keycloak.lucette-pomponette.fr
-    ports:
-      - "8080:8080"
-    restart: unless-stopped
-    depends_on:
-      - mariadb
-    networks:
-      - app-network
+#  keycloak:
+#    image: quay.io/keycloak/keycloak:22.0.0
+#    command: start
+#    environment:
+#      KEYCLOAK_ADMIN: admin
+#      KEYCLOAK_ADMIN_PASSWORD: admin
+#      # DB
+#      KC_DB: mariadb
+#      KC_DB_USERNAME: ${DB_AUTH_USER}
+#      KC_DB_PASSWORD: ${DB_AUTH_USER_PASS}
+#      KC_DB_URL_HOST: mariadb
+#      KC_DB_URL_PORT: 3306
+#      KC_DB_URL_DATABASE: ${DB_AUTH_DATABASE}
+#      # (optionnel) pool plus tolérant au démarrage
+#      # KC_DB_POOL_INITIAL_SIZE: 1
+#      # KC_DB_POOL_MIN_SIZE: 1
+#      # KC_DB_POOL_MAX_SIZE: 10
+#      KC_PROXY: edge
+#      KC_HOSTNAME_URL: https://keycloak.lucette-pomponette.fr
+#    ports:
+#      - "8080:8080"
+#    restart: unless-stopped
+#    depends_on:
+#      - mariadb
+#    networks:
+#      - app-network
+
   rabbitmq:
     image: rabbitmq:3-management
     container_name: rabbitmq
@@ -73,6 +74,10 @@ services:
       # MISCELLANEOUS
       LOGS_FOLDER: /logs
       LOG_LEVEL: ${LOG_LEVEL}
+      #Keycloak
+      KEYCLOAK_ISSUER: ${KEYCLOAK_ISSUER}
+      KEYCLOAK_AUDIENCE: ${KEYCLOAK_AUDIENCE}
+      KEYCLOAK_CLIENT_SECRET: ${KEYCLOAK_CLIENT_SECRET}
     depends_on:
       - db_mock_data
       - rabbitmq
@@ -147,38 +152,38 @@ services:
       DB_PASSWORD: ${MARIADB_MOCK_PASSWORD}
     networks:
       - app-network
-
-  prometheus:
-    image: prom/prometheus:v2.55.0
-    container_name: prometheus
-    command:
-      - --config.file=/etc/prometheus/prometheus.yml
-    volumes:
-      - ./observability/prometheus.yml:/etc/prometheus/prometheus.yml:ro
-      - prometheus-data:/prometheus
-    networks:
-      - app-network
-    ports:
-      - "9090:9090"
-
-  grafana:
-    image: grafana/grafana:11.2.0
-    container_name: grafana
-    environment:
-      - GF_SECURITY_ADMIN_USER=${GRAFANA_ADMIN_USER}
-      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASS}
-    depends_on:
-      - prometheus
-    volumes:
-      - grafana-data:/var/lib/grafana
-    networks:
-      - app-network
-    ports:
-      - "3001:3000"
+#
+#  prometheus:
+#    image: prom/prometheus:v2.55.0
+#    container_name: prometheus
+#    command:
+#      - --config.file=/etc/prometheus/prometheus.yml
+#    volumes:
+#      - ./observability/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+#      - prometheus-data:/prometheus
+#    networks:
+#      - app-network
+#    ports:
+#      - "9090:9090"
+#
+#  grafana:
+#    image: grafana/grafana:11.2.0
+#    container_name: grafana
+#    environment:
+#      - GF_SECURITY_ADMIN_USER=${GRAFANA_ADMIN_USER}
+#      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASS}
+#    depends_on:
+#      - prometheus
+#    volumes:
+#      - grafana-data:/var/lib/grafana
+#    networks:
+#      - app-network
+#    ports:
+#      - "3001:3000"
 networks:
   app-network:
     driver: bridge
 
-volumes:
-  prometheus-data:
-  grafana-data:
+#volumes:
+#  prometheus-data:
+#  grafana-data:
