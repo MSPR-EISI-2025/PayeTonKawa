@@ -1,0 +1,72 @@
+jobs:
+  deploy_ssh:
+    name: Deploy via SSH (docker compose)
+    runs-on: ubuntu-latest
+    env:
+      DOCKERHUB_REPO: bowo73/payetonkawa        
+      DEPLOY_PATH: /opt/payetonkawa    
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: false
+
+      - name: Decide channel tag (ci-main|ci-develop)
+        id: ch
+        run: |
+          if [ "${GITHUB_REF_NAME}" = "main" ]; then
+            echo "channel=ci-main" >> $GITHUB_OUTPUT
+          else
+            echo "channel=ci-develop" >> $GITHUB_OUTPUT
+          fi
+
+      # genere un override compose avec image: bowo73/payetonkawa:<service>-<channel>
+      - name: Make compose.deploy.yml (from services with build:)
+        env:
+          CHANNEL: ${{ steps.ch.outputs.channel }}
+        run: |
+          python3 - <<'PY' > compose.deploy.yml
+          import yaml, sys, os
+          with open('docker-compose.yml') as f:
+              data = yaml.safe_load(f) or {}
+          svcs = {n:s for n,s in (data.get('services') or {}).items() if isinstance(s, dict) and 'build' in s}
+          if not svcs:
+              sys.exit("No buildable services found")
+          chan = os.environ['CHANNEL']
+          repo = os.environ.get('DOCKERHUB_REPO','bowo73/payetonkawa')
+          out = {'version': '3.9','services': {}}
+          for name in svcs:
+              out['services'][name] = {'image': f"{repo}:{name}-{chan}"}
+          yaml.safe_dump(out, sys.stdout, sort_keys=False)
+          PY
+          echo "----- compose.deploy.yml -----"
+          cat compose.deploy.yml
+
+      # copie docker-compose.yml + override sur le serveur
+      - name: Upload compose files to server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT || 22 }}
+          source: |
+            docker-compose.yml
+            compose.deploy.yml
+          target: ${{ env.DEPLOY_PATH }}
+
+      # connexion ssh et deploiement
+      - name: Deploy on server (pull & up)
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT || 22 }}
+          script: |
+            set -e
+            cd "${DEPLOY_PATH}"
+            echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+            docker compose --env-file .env.prod.sample -f docker-compose.yml -f compose.deploy.yml --profile inporter pull
+            docker compose --env-file .env.prod.sample -f docker-compose.yml -f compose.deploy.yml --profile inporter up -d --remove-orphans
+
+
