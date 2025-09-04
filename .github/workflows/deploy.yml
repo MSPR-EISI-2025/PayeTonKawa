@@ -123,11 +123,18 @@ jobs:
       # connexion ssh et deploiement
       - name: Deploy on server (pull & up)
         uses: appleboy/ssh-action@v1.0.3
+        env:                                  #on charge les secrets dans l'env du step
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+          DEPLOY_PATH: ${{ env.DEPLOY_PATH }}
+          ENV_FILE: ${{ env.ENV_FILE }}
+          PROFILE: ${{ env.PROFILE }}
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.SSH_PORT || 22 }}
+          envs: DOCKER_USERNAME,DOCKER_PASSWORD,DEPLOY_PATH,ENV_FILE,PROFILE  #export vers la session ssh
           script: |
             set -e
             cd "${DEPLOY_PATH}"
