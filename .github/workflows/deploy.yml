@@ -161,7 +161,7 @@ jobs:
             set -e
             cd "${DEPLOY_PATH}"
             echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
-            docker-compose -f docker-compose.yml -f compose.deploy.yml pull ${API_SERVICES}
-            docker-compose -f docker-compose.yml -f compose.deploy.yml  -d --remove-orphans ${API_SERVICES}
+            docker-compose -f docker-compose_deploy.yml -f compose.deploy.yml pull ${API_SERVICES}
+            docker-compose -f docker-compose_deploy.yml -f compose.deploy.yml  -d --remove-orphans ${API_SERVICES}
 
 
