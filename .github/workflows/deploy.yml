@@ -5,7 +5,7 @@ on:
   
 env:
   DOCKERHUB_REPO: bowo73/payetonkawa     # repo Docker Hub
-  DEPLOY_PATH: /home/${{ secrets.SSH_USER }}/PayeTonKawa/deployment   # dossier cible sur le serveur
+  DEPLOY_PATH: /home/${{ secrets.SSH_USER }}/PayeTonKawa   # dossier cible sur le serveur
   ENV_FILE: .env.prod.sample           # env-file à utiliser côté serveur
   PROFILE: inporter                    # profile docker compose à activer
 
@@ -18,7 +18,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       DOCKERHUB_REPO: bowo73/payetonkawa        
-      DEPLOY_PATH: /home/${{ secrets.SSH_USER }}/PayeTonKawa/deployment
+      DEPLOY_PATH: /home/${{ secrets.SSH_USER }}/PayeTonKawa
     steps:
       - uses: actions/checkout@v4
         with:
