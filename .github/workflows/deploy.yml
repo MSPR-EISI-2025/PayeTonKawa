@@ -1,3 +1,17 @@
+name: Deploy via SSH
+
+on:
+  workflow_dispatch:         # déclenchement manuel
+  
+env:
+  DOCKERHUB_REPO: bowo73/payetonkawa     # repo Docker Hub
+  DEPLOY_PATH: /opt/payetonkawa        # dossier cible sur le serveur
+  ENV_FILE: .env.prod.sample           # env-file à utiliser côté serveur
+  PROFILE: inporter                    # profile docker compose à activer
+
+permissions:
+  contents: read
+
 jobs:
   deploy_ssh:
     name: Deploy via SSH (docker compose)
