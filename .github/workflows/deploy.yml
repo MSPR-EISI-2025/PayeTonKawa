@@ -5,7 +5,7 @@ on:
   
 env:
   DOCKERHUB_REPO: bowo73/payetonkawa     # repo Docker Hub
-  DEPLOY_PATH: /opt/payetonkawa        # dossier cible sur le serveur
+  DEPLOY_PATH: /PayeTonKawa/deployment   # dossier cible sur le serveur
   ENV_FILE: .env.prod.sample           # env-file à utiliser côté serveur
   PROFILE: inporter                    # profile docker compose à activer
 
