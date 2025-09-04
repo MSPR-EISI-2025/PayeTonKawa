@@ -68,13 +68,19 @@ jobs:
             echo "::warning::.env.prod.sample non trouvé, on l'ignorera pour l'upload"
           fi
 
+      - name: Préparer le fichier .env à partir de .env.prod.sample
+        run: |
+          set -e
+          test -f .env.prod.sample || { echo "::error::.env.prod.sample manquant"; exit 1; }
+          cp -f .env.prod.sample .env
+
       # construire la liste 'source' (format attendu: chemins separes par des virgules)
       - name: Build upload source list
         id: upl
         shell: bash
         run: |
           set -e
-          FILES=(docker-compose.yml compose.deploy.yml)
+          FILES=(docker-compose.yml compose.deploy.yml .env)
           [ -f .env.prod.sample ] && FILES+=(".env.prod.sample")
           LIST=$(printf "%s," "${FILES[@]}" | sed 's/,$//')
           echo "list=$LIST" >> "$GITHUB_OUTPUT"
@@ -106,6 +112,12 @@ jobs:
           #port: ${{ secrets.SSH_PORT }}
           #script: |
           #  ls /PayeTonKawa
+
+      - name: Préparer le fichier .env à partir de .env.prod.sample
+        run: |
+          set -e
+          test -f .env.prod.sample || { echo "::error::.env.prod.sample manquant"; exit 1; }
+          cp -f .env.prod.sample .env
 
       # upload sans archive vide
       - name: Upload compose files to server
@@ -139,7 +151,7 @@ jobs:
             set -e
             cd "${DEPLOY_PATH}"
             echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
-            docker compose --env-file .env.prod.sample -f docker-compose.yml -f compose.deploy.yml --profile inporter pull
-            docker compose --env-file .env.prod.sample -f docker-compose.yml -f compose.deploy.yml --profile inporter up -d --remove-orphans
+            docker compose -f docker-compose.yml -f compose.deploy.yml --profile inporter pull
+            docker compose -f docker-compose.yml -f compose.deploy.yml --profile inporter up -d --remove-orphans
 
 
