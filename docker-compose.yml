@@ -118,8 +118,6 @@ services:
     volumes:
       - ${LOGS_FOLDER}/product:/logs
     restart: ${RESTART}
-    ports:
-      - "33783:3000"
     environment:
       RABBITMQ_USER: ${RABBITMQ_USER}
       RABBITMQ_PASS: ${RABBITMQ_PASS}
