@@ -81,6 +81,8 @@ services:
 
   backend_orders:
     build: ./app/orders
+    ports:
+      - "34783:3000"
     volumes:
       - ${LOGS_FOLDER}:/logs
     restart: ${RESTART}
@@ -93,13 +95,21 @@ services:
       NODE_ENV: ${NODE_ENV}
       DB_USER: ${ORDERS_DB_USER}
       DB_PASS: ${ORDERS_DB_PASS}
+      DB_NAME: ${MARIADB_MOCK_DATABASE}
+      #Keycloak
+      KEYCLOAK_ISSUER: ${KEYCLOAK_ISSUER}
+      KEYCLOAK_AUDIENCE: ${KEYCLOAK_PRODUCT_AUDIENCE}
+      KEYCLOAK_CLIENT_SECRET: ${KEYCLOAK_CLIENT_PRODUCT_SECRET}
     depends_on:
+      - db_mock_data
       - rabbitmq
     networks:
       - app-network
 
   backend_product:
     build: ./app/product
+    ports:
+      - "33783:3000"
     volumes:
       - ${LOGS_FOLDER}:/logs
     restart: ${RESTART}
@@ -112,6 +122,10 @@ services:
       NODE_ENV: ${NODE_ENV}
       DB_USER: ${PRODUCTS_DB_USER}
       DB_PASS: ${PRODUCTS_DB_PASS}
+      #Keycloak
+      KEYCLOAK_ISSUER: ${KEYCLOAK_ISSUER}
+      KEYCLOAK_AUDIENCE: ${KEYCLOAK_PRODUCT_AUDIENCE}
+      KEYCLOAK_CLIENT_SECRET: ${KEYCLOAK_CLIENT_PRODUCT_SECRET}
     depends_on:
       - rabbitmq
     networks:

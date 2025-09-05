@@ -1,0 +1,137 @@
+{
+  "info": {
+    "name": "Orders API",
+    "description": "Postman collection for Orders API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Get all orders",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{jwt_token}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:34783/orders",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "34783",
+          "path": ["orders"]
+        }
+      }
+    },
+    {
+      "name": "Get order by id",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{jwt_token}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:34783/orders/{{id}}",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "34783",
+          "path": ["orders", "{{id}}"]
+        }
+      }
+    },
+    {
+      "name": "Create order",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{jwt_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"createdAt\": \"2025-09-05T00:00:00.000Z\",\n  \"customer_id\": 1\n}"
+        },
+        "url": {
+          "raw": "http://localhost:34783/orders",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "34783",
+          "path": ["orders"]
+        }
+      }
+    },
+    {
+      "name": "Update order",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{jwt_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"createdAt\": \"2025-09-05T00:00:00.000Z\",\n  \"customer_id\": 2\n}"
+        },
+        "url": {
+          "raw": "http://localhost:34783/orders/{{id}}",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "34783",
+          "path": ["orders", "{{id}}"]
+        }
+      }
+    },
+    {
+      "name": "Delete order",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{jwt_token}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:34783/orders/{{id}}",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "34783",
+          "path": ["orders", "{{id}}"]
+        }
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "jwt_token",
+      "value": ""
+    },
+    {
+      "key": "id",
+      "value": "1"
+    }
+  ]
+}
