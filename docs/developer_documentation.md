@@ -1,5 +1,3 @@
-# Developer documentation
-
 # Developer Documentation - PayeTonKawa
 
 ## Table of Contents
@@ -1168,18 +1166,68 @@ The jobs that launch the units tests and API tests are located on the main repos
 The units tests are launched at each commit/MR on the main or develop branches.
 The API test are manually launched on the version running on the production server.
 
-###Images Build
+### Images Build
 The job to build the container images for the project is located on the main repository and is launched 
 at each commit/push on the main branch.
 The images are then stored in the dockerhub registry. The secrets are stored on PAyeTonKawa repository.
 
-###Deployment
+### Deployment
 The job to deploy a version on the production server is also located on the PayeTonKawa repository.
 It uses a ssh connexion to access the production server and the pull the images from the dockerhub registry
 to deploy the app using docker-compose. Be careful not to modify the .env or deploy a new .env to avoid breaking the production.
 Secrets are stored on the main repository. 
 
-##Monitoring
+## Monitoring
 For all developers who wants to watch in real time the health of the application, please go to the grafana dashboard.
 If you want to add new targets to monitor, please connect to the production serveur and edit the prometheus.yml.
 If you want to edit the grafana dashboard, please ask an admin to give you the rights.
+
+
+## Keycloak Documentation
+<!--doc based mainly on : https://www.geeksforgeeks.org/keycloak-create-realm-client-roles-and-user/ -->
+
+### Enter Keyclaok
+Admin console > default id/password = `admin` `admin`  
+
+### Create a realm
+This means the whole app configuration  
+On `Realm name` = `PayeTonKawa`
+
+### Create 3 clients
+One client for each API which will allow to separate the APIs in different roles (RBAC)  
+On the left panel `Clients` > click on the `Create Client` button > fill `Client ID` and `Name` with `ptk-<api_name>` > Next > `Client authentication` and `authorization` ON > Next > `Valid redirect URIs` fill with `http://localhost:<api_port>/*` > Save
+
+### Creating client roles
+On the left panel `Clients` > select your client (one of the `ptk-<api_name>`) > `Roles` tab > `Create role` > in `Role name` fill with `ptk-<api_name>-role` > Save
+
+### Create a user
+#### Create user
+On the left panel `Users` > `Add user` > enter at least `Username` (`test-user`) > Create
+#### Assign user a role
+On the left panel `Users` > select your user > `Role mapping` tab > `Assign role` > filter with `Filter by clients` on the top left of the openning window > select a `ptk-<api_name>-role` corresponding to the API the user must access
+#### Set password to user (optionnal)
+On the left panel `Users` > select your user > `Credential` tab > Set password > Save
+
+### Curl / Postman Keycloak
+Adapter les informations suivantes :
+- client_id : keycloak client name
+- client_secret : left panel `Clients` > tab `Credentials` > attribute `Client secret`
+- grant_type : if `Direct access grants` checked in Client's config
+- username : one of Keycloak user's username
+- password : Keycloak user's password (**beware NO one time password**)
+
+Example curl : 
+```
+curl -X POST "https://keycloak.lucette-pomponette.fr/realms/PayeTonKawa/protocol/openid-connect/token" \  -H "Content-Type: application/x-www-form-urlencoded" \  -d "client_id=ptk-clients" \  -d "client_secret=***" \  -d "grant_type=password" \  -d "username=test-user" \  -d "password=test1234"
+```
+Vérification
+```
+curl -H "Authorization: Bearer $TOKEN" https://api.lucette-pomponette.fr/orders
+```
+
+### Import or Export a Keycloak realm
+Select the realm you want to import or export
+#### Export a Keycloak realm
+On the left panel select `Realm settings` > on the top right corner click on `Action` > select `Partial export` > select `Include groups and roles` and `Include clients` > Press `Export` 
+#### Import a Keycloak realm
+On the left panel select `Realm settings` > on the top right corner click on `Action` > select `Partial import` > select `Browse...` > select your file > select all users, clients, realm roles and client roles > select `Skip` on the dropdown menu > `Import`  
